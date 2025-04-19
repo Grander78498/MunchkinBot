@@ -28,9 +28,10 @@ class APIClient:
                                     data=json.dumps(body))
         return response.json()
 
-    def save_user(self, tg_id: int, user_name: str) -> dict[str, Any]:
+    def save_user(self, tg_id: int, user_name: str, full_name: str) -> dict[str, Any]:
         result = self._handle_request(Method.POST,
                                       '/users/save',
                                       body=dict(tg_id=tg_id,
-                                                user_name=user_name))
+                                                user_name=user_name,
+                                                full_name=full_name))
         return result

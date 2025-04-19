@@ -19,7 +19,8 @@ api_client = APIClient('http://127.0.0.1:8000')
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     result = api_client.save_user(message.from_user.id,
-                                  message.from_user.username)
+                                  message.from_user.username,
+                                  message.from_user.full_name)
     await message.answer(result['msg'])
 
 
