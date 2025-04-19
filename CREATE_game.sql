@@ -1,0 +1,25 @@
+CREATE TABLE tg_user IF NOT EXISTS(
+    tg_id BIGINT PRIMARY KEY,
+    user_name VARCHAR(32) NOT NULL,
+    full_name VARCHAR(128) NOT NULL
+);
+
+CREATE TABLE tg_group IF NOT EXISTS(
+    tg_id BIGINT PRIMARY KEY,
+    name VARCHAR(32) NOT NULL
+);
+
+CREATE TABLE game IF NOT EXISTS (
+    id BIGSERIAL PRIMARY KEY,
+    group_id BIGINT REFERENCES ON tg_group(tg_id) NOT NULL,
+    on_going BOOLEAN NOT NULL,
+    
+)
+
+CREATE TABLE possible_genders IF NOT EXISTS(
+    id BIGSERIAL
+)
+
+CREATE TABLE munchkin IF NOT EXISTS(
+    
+)
