@@ -4,9 +4,9 @@
 
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
-from backend.models import AsyncGameSession
-from backend.models.game_db import User
-from backend.models.responses import SuccessfulResponse
+from backend.database import AsyncGameSession
+from backend.database.models import User
+from backend.database.responses import SuccessfulResponse
 
 router = APIRouter(
     prefix='/user',
@@ -24,7 +24,7 @@ async def save_user(user: User, session: AsyncGameSession):
     return {'msg': "All good"}
 
 
-@router.get('{user_id}')
+@router.get('/{user_id}')
 async def get_user(user_id: int, session: AsyncGameSession) -> User:
     """Получение информации о пользователе"""
 

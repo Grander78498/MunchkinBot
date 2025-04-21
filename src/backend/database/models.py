@@ -4,74 +4,76 @@
 либо "абстрактными" классами
 """
 
-from sqlmodel import Field, Relationship
-from backend.models import SQLModelGame
+from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Column, BigInteger
 
 
-class User(SQLModelGame, table=True):
+class User(SQLModel, table=True):
     """Пользователь"""
 
     __tablename__ = 'tg_user'
 
-    tg_id: int = Field(primary_key=True)
+    tg_id: int = Field(
+        sa_column=Column(BigInteger(), primary_key=True, autoincrement=False))
     user_name: str = Field(unique=True, max_length=32)
     full_name: str = Field(unique=True, max_length=128)
 
 
-class Group(SQLModelGame, table=True):
+class Group(SQLModel, table=True):
     """Телеграм группа"""
 
     __tablename__ = 'tg_group'
 
-    tg_id: int = Field(primary_key=True)
+    tg_id: int = Field(
+        sa_column=Column(BigInteger(), primary_key=True, autoincrement=False))
     name: str = Field(unique=True, max_length=32)
 
     games: list["Game"] = Relationship(back_populates="group")
 
 
-class Game(SQLModelGame, table=True):
+class Game(SQLModel, table=True):
     """Информация об игровой партии"""
 
     id: int | None = Field(default=None, primary_key=True)
-    group_id: int = Field(foreign_key="tg_group.id")
+    group_id: int = Field(foreign_key="tg_group.tg_id")
     on_going: bool
     current_player_number: int
 
     group: Group = Relationship(back_populates="games")
 
 
-# class PossibleGenders(SQLModelGame, table = True):
+# class PossibleGenders(SQLModel, table = True):
 #     pass
 
-# class Stats(SQLModelGame, table = True):
+# class Stats(SQLModel, table = True):
 #     pass
 
-# class StatsType(SQLModelGame, table = True):
+# class StatsType(SQLModel, table = True):
 #     pass
 
-# class MunchkinStats(SQLModelGame, table = True):
+# class MunchkinStats(SQLModel, table = True):
 #     pass
 
-# class MunchkinItem(SQLModelGame, table = True):
+# class MunchkinItem(SQLModel, table = True):
 #     pass
 
-# class Munchkin(SQLModelGame, table = True):
+# class Munchkin(SQLModel, table = True):
 #     pass
 
-# class MunchkinCombat(SQLModelGame, table = True):
+# class MunchkinCombat(SQLModel, table = True):
 #     pass
 
-# class MonsterCombat(SQLModelGame, table = True):
+# class MonsterCombat(SQLModel, table = True):
 #     pass
 
-# class Combat(SQLModelGame, table = True):
+# class Combat(SQLModel, table = True):
 #     pass
 
-# class MunchkinCards(SQLModelGame, table = True):
+# class MunchkinCards(SQLModel, table = True):
 #     pass
 
-# class Monster(SQLModelGame, table = True):
+# class Monster(SQLModel, table = True):
 #     pass
 
-# class UndeadType(SQLModelGame, table = True):
+# class UndeadType(SQLModel, table = True):
 #     pass
