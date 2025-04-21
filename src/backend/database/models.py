@@ -6,9 +6,13 @@
 
 from enum import Enum
 
-from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, BigInteger, SmallInteger, ForeignKey
+from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
+from sqlalchemy import Column, BigInteger, SmallInteger
 from sqlalchemy.dialects.postgresql import ENUM
+
+
+def LazyRelationship(*args, **kwargs):
+    return Relationship(*args, sa_relationship_kwargs={'lazy': 'selectin'}, **kwargs)
 
 
 class Gender(str, Enum):
@@ -32,7 +36,11 @@ class MunchkinCombat(SQLModel, table=True):
     is_helping: bool
 
 
-class User(SQLModel, table=True):
+class UserBase(SQLModel):
+    tg_id: int
+
+
+class User(UserBase, table=True):
     
     """Пользователь"""
 
@@ -43,10 +51,14 @@ class User(SQLModel, table=True):
     user_name: str = Field(unique=True, max_length=32)
     full_name: str = Field(unique=True, max_length=128)
 
-    munchkins: list["Munchkin"] = Relationship(back_populates="user")
+    munchkins: list["Munchkin"] = LazyRelationship(back_populates="user")
 
 
-class Group(SQLModel, table=True):
+class GroupBase(SQLModel):
+    tg_id: int
+
+
+class Group(GroupBase, table=True):
     """Телеграм группа"""
 
     __tablename__ = 'tg_group'
@@ -55,7 +67,7 @@ class Group(SQLModel, table=True):
         sa_column=Column(BigInteger(), primary_key=True, autoincrement=False))
     name: str = Field(unique=True, max_length=32)
 
-    games: list["Game"] = Relationship(back_populates="group")
+    games: list["Game"] = LazyRelationship(back_populates="group")
 
 
 class Game(SQLModel, table=True):
@@ -63,35 +75,39 @@ class Game(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     group_id: int = Field(foreign_key="tg_group.tg_id")
-    on_going: bool
-    current_player_number: int
+    on_going: bool = Field(default=False)
+    current_player_number: int = Field(default=-1)
 
     group: Group = Relationship(back_populates="games")
 
-    munchkins: list["Munchkin"] = Relationship(back_populates="game")
-    combats: list["Combat"] = Relationship(back_populates="game")
+    munchkins: list["Munchkin"] = LazyRelationship(back_populates="game")
+    combats: list["Combat"] = LazyRelationship(back_populates="game")
 
 
 class Munchkin(SQLModel, table=True):
     """Информация о манчкине"""
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "game_id"),
+    )
 
     id: int | None = Field(default=None, primary_key=True)
 
     user_id: int = Field(foreign_key="tg_user.tg_id")
     game_id: int = Field(foreign_key="game.id")
     
-    gender: Gender = Field(sa_column=Column(ENUM(Gender)))
-    number: int = Field(sa_column=Column(SmallInteger()))
-    level: int = Field(sa_column=Column(SmallInteger()))
-    strength: int = Field(sa_column=Column(SmallInteger()))
-    luck: int = Field(sa_column=Column(SmallInteger()))
-    runaway_bonus: int = Field(sa_column=Column(SmallInteger()))
+    gender: Gender = Field(default=Gender.MALE, sa_column=Column(ENUM(Gender)))
+    number: int = Field(default=-1, sa_column=Column(SmallInteger()))
+    level: int = Field(default=1, sa_column=Column(SmallInteger()))
+    strength: int = Field(default=1, sa_column=Column(SmallInteger()))
+    luck: int = Field(default=0, sa_column=Column(SmallInteger()))
+    runaway_bonus: int = Field(default=0, sa_column=Column(SmallInteger()))
 
-    user: User = Relationship(back_populates="munchkins")
-    game: Game = Relationship(back_populates="munchkins")
+    user: User = LazyRelationship(back_populates="munchkins")
+    game: Game = LazyRelationship(back_populates="munchkins")
 
-    turns: list["Turn"] = Relationship(back_populates="turn")
-    combats: list["Combat"] = Relationship(back_populates="munchkins", link_model=MunchkinCombat)
+    turns: list["Turn"] = LazyRelationship(back_populates="munchkin")
+    combats: list["Combat"] = LazyRelationship(back_populates="munchkins", link_model=MunchkinCombat)
 
 
 class Turn(SQLModel, table=True):
@@ -100,7 +116,7 @@ class Turn(SQLModel, table=True):
     munchkin_id: int = Field(foreign_key="munchkin.id")
     turn_type: TurnType = Field(sa_column=Column(ENUM(TurnType)))
 
-    munchkin: Munchkin = Relationship(back_populates="turns")
+    munchkin: Munchkin = LazyRelationship(back_populates="turns")
 
 
 class Combat(SQLModel, table=True):
@@ -112,9 +128,9 @@ class Combat(SQLModel, table=True):
     is_active: bool
     is_runaway: bool
     
-    game: Game = Relationship(back_populates="combats")
+    game: Game = LazyRelationship(back_populates="combats")
 
-    munchkins: list[Munchkin] = Relationship(back_populates="combats", link_model=MunchkinCombat)
+    munchkins: list[Munchkin] = LazyRelationship(back_populates="combats", link_model=MunchkinCombat)
 
 
 # class Stats(SQLModel, table = True):
