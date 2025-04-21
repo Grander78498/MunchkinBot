@@ -7,12 +7,17 @@
 from enum import Enum
 
 from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
-from sqlalchemy import Column, BigInteger, SmallInteger
+from sqlalchemy import Column, BigInteger, SmallInteger, Text
 from sqlalchemy.dialects.postgresql import ENUM
 
 
 def LazyRelationship(*args, **kwargs):
     return Relationship(*args, sa_relationship_kwargs={'lazy': 'selectin'}, **kwargs)
+
+
+class NotNullableColumn(Column):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, nullable=False, **kwargs)
 
 
 class Gender(str, Enum):
@@ -28,11 +33,32 @@ class TurnType(str, Enum):
     COMBAT = 'combat'
 
 
+class CardType(str, Enum):
+    DOOR = 'door'
+    TREASURE = 'treasure'
+
+
+class ItemType(str, Enum):
+    HEADGEAR = 'головняк'
+    ARMOR = 'броник'
+    FOOTGEAR = 'обувка'
+    ONE_HAND = 'в 1 руку'
+    TWO_HAND = 'в 2 руки'
+    THREE_HAND = 'в 3 руки'
+    MINUS_HAND = '-1 рука'
+
+
+class ItemProperty(str, Enum):
+    FLAME = 'огненная'
+    WOODEN = 'древесная'
+    STICK = 'палка/жезл/посох'
+
+
 class MunchkinCombat(SQLModel, table=True):
     munchkin_id: int | None = Field(default=None, primary_key=True, foreign_key="munchkin.id")
     combat_id: int | None = Field(default=None, primary_key=True, foreign_key="combat.id")
-    modifier: int = Field(sa_column=Column(SmallInteger()))
-    runaway_bonus: int = Field(sa_column=Column(SmallInteger()))
+    modifier: int = Field(sa_column=NotNullableColumn(SmallInteger()))
+    runaway_bonus: int = Field(sa_column=NotNullableColumn(SmallInteger()))
     is_helping: bool
 
 
@@ -47,7 +73,7 @@ class User(UserBase, table=True):
     __tablename__ = 'tg_user'
 
     tg_id: int = Field(
-        sa_column=Column(BigInteger(), primary_key=True, autoincrement=False))
+        sa_column=NotNullableColumn(BigInteger(), primary_key=True, autoincrement=False))
     user_name: str = Field(unique=True, max_length=32)
     full_name: str = Field(unique=True, max_length=128)
 
@@ -64,7 +90,7 @@ class Group(GroupBase, table=True):
     __tablename__ = 'tg_group'
 
     tg_id: int = Field(
-        sa_column=Column(BigInteger(), primary_key=True, autoincrement=False))
+        sa_column=NotNullableColumn(BigInteger(), primary_key=True, autoincrement=False))
     name: str = Field(unique=True, max_length=32)
 
     games: list["Game"] = LazyRelationship(back_populates="group")
@@ -96,12 +122,12 @@ class Munchkin(SQLModel, table=True):
     user_id: int = Field(foreign_key="tg_user.tg_id")
     game_id: int = Field(foreign_key="game.id")
     
-    gender: Gender = Field(default=Gender.MALE, sa_column=Column(ENUM(Gender)))
-    number: int = Field(default=-1, sa_column=Column(SmallInteger()))
-    level: int = Field(default=1, sa_column=Column(SmallInteger()))
-    strength: int = Field(default=1, sa_column=Column(SmallInteger()))
-    luck: int = Field(default=0, sa_column=Column(SmallInteger()))
-    runaway_bonus: int = Field(default=0, sa_column=Column(SmallInteger()))
+    gender: Gender = Field(default=Gender.MALE, sa_column=NotNullableColumn(ENUM(Gender)))
+    number: int = Field(default=-1, sa_column=NotNullableColumn(SmallInteger()))
+    level: int = Field(default=1, sa_column=NotNullableColumn(SmallInteger()))
+    strength: int = Field(default=1, sa_column=NotNullableColumn(SmallInteger()))
+    luck: int = Field(default=0, sa_column=NotNullableColumn(SmallInteger()))
+    runaway_bonus: int = Field(default=0, sa_column=NotNullableColumn(SmallInteger()))
 
     user: User = LazyRelationship(back_populates="munchkins")
     game: Game = LazyRelationship(back_populates="munchkins")
@@ -114,7 +140,7 @@ class Turn(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     
     munchkin_id: int = Field(foreign_key="munchkin.id")
-    turn_type: TurnType = Field(sa_column=Column(ENUM(TurnType)))
+    turn_type: TurnType = Field(sa_column=NotNullableColumn(ENUM(TurnType)))
 
     munchkin: Munchkin = LazyRelationship(back_populates="turns")
 
@@ -122,7 +148,7 @@ class Turn(SQLModel, table=True):
 class Combat(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     game_id: int = Field(foreign_key="game.id")
-    difference: int = Field(sa_column=Column(SmallInteger()))
+    difference: int = Field(sa_column=NotNullableColumn(SmallInteger()))
     munchkin_can_join: bool
     monster_can_join: bool
     is_active: bool
@@ -132,6 +158,73 @@ class Combat(SQLModel, table=True):
 
     munchkins: list[Munchkin] = LazyRelationship(back_populates="combats", link_model=MunchkinCombat)
 
+
+class CardBase(SQLModel):
+    name: str = Field(unique=True, max_length=64)
+    image_path: str = Field(unique=True, max_length=64)
+    description: str
+    # action_group_id: int = 
+    card_type: CardType = Field(sa_column=NotNullableColumn(ENUM(CardType)))
+
+
+class Card(CardBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    description: str = Field(sa_column=NotNullableColumn(Text(), unique=True))
+
+
+class Treasure(CardBase):
+    card_type: CardType = CardType.TREASURE
+
+
+class ItemBase(Treasure):
+    bonus: int
+    runaway_bonus: int | None
+    one_shot: bool
+    is_big: bool
+    is_hireling: bool
+    price: int | None
+    item_type: ItemType | None
+    item_property: ItemProperty | None
+
+
+class Item(ItemBase, table=True):
+    card_id: int = Field(foreign_key="card.id", primary_key=True)
+    description: str = Field(sa_column=NotNullableColumn(Text(), unique=True))
+
+    bonus: int = Field(sa_column=NotNullableColumn(SmallInteger()))
+    runway_bonus: int | None = Field(default=None, sa_column=Column(SmallInteger()))
+    price: int | None = Field(default=None, sa_column=Column(SmallInteger()))
+
+    item_type: ItemType | None = Field(default=None, sa_column=Column(ENUM(ItemType)))
+    item_property: ItemProperty | None = Field(default=None, sa_column=Column(ENUM(ItemProperty)))
+
+
+'''
+class CardType(str, Enum):
+    DOOR = "door"
+    TREASURE = "treasure"
+
+class CardBase(SQLModel):
+    name: str = Field(unique=True, max_length=64)
+    description: str = Field(unique=True)
+    image_path: str = Field(unique=True, max_length=64)
+    card_type: CardType = Field(sa_column=Column(SQLEnum(CardType)))
+
+class Card(CardBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+class TreasureBase(CardBase):
+    card_type: CardType = CardType.TREASURE
+
+class Treasure(TreasureBase, Card, table=True):
+    id: int = Field(foreign_key="card.id", primary_key=True)
+
+class ItemBase(TreasureBase):
+    bonus: int
+
+class Item(ItemBase, Treasure, table=True):
+    id: int = Field(foreign_key="treasure.id", primary_key=True)
+'''
 
 # class Stats(SQLModel, table = True):
 #     pass
