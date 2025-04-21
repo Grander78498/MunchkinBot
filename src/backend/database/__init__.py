@@ -8,15 +8,18 @@ from pathlib import Path
 from typing import AsyncGenerator, Annotated
 
 from dotenv import load_dotenv
-from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import (AsyncSession, create_async_engine,
                                     async_sessionmaker, AsyncEngine)
 from fastapi import Depends
+
+from custom_exceptions import EnvException
 
 current_dir = Path().absolute()
 load_dotenv(current_dir.parent.parent.joinpath('.env'))
 
 db_url = os.getenv('DB_URL')
+if db_url is None:
+    raise EnvException('Отсутствует переменная среды DB_URL')
 engine = create_async_engine(db_url)
 
 

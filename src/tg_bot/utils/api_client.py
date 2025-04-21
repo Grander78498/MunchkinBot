@@ -8,13 +8,13 @@ from enum import Enum
 import requests
 
 
-class Method(Enum):
+class Method(str, Enum):
     """Перечисление для доступных HTTP методов"""
 
     GET = 'get'
     POST = 'post'
 
-    def upper(self):
+    def upper(self) -> str:
         """Метод, чтобы requests мог вызвать его у себя под капотом"""
         return str.upper(self.value)
 
@@ -29,7 +29,7 @@ class APIClient:
                         method: Method,
                         url: str,
                         path_params: dict[str, Any] | None = None,
-                        body: dict[str, Any] | None = None) -> dict[str, Any]:
+                        body: dict[str, Any] | None = None) -> Any:
         """Отправка запроса с заданными параметрами
 
         Args:
@@ -52,8 +52,8 @@ class APIClient:
                                     timeout=1)
         return response.json()
 
-    def save_user(self, tg_id: int, user_name: str,
-                  full_name: str) -> dict[str, Any]:
+    def save_user(self, tg_id: int, user_name: str | None,
+                  full_name: str) -> Any:
         """Сохранение юзера
 
         Args:
@@ -73,7 +73,7 @@ class APIClient:
                                       })
         return result
 
-    def get_user(self, tg_id: int) -> dict[str, Any]:
+    def get_user(self, tg_id: int) -> Any:
         """Получение информации о пользователе
 
         Args:
