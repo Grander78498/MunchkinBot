@@ -2,6 +2,8 @@
 Получение информации о пользователях
 """
 
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 from backend.database import AsyncGameSession
@@ -15,7 +17,7 @@ router = APIRouter(
 
 
 @router.post('', response_model=SuccessfulResponse)
-async def save_user(user: User, session: AsyncGameSession):
+async def save_user(user: User, session: AsyncGameSession) -> Any:
     """Сохранение информации о пользователе"""
 
     async with session.begin():

@@ -24,3 +24,7 @@ jobs:
       - name: Analysing the code with pylint
         run: |
               uv run pylint $(git ls-files '*.py')
+        
+      - name: Static analysing code with mypy
+        run: |
+              uv run mypy .

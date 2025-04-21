@@ -13,7 +13,6 @@ dependencies = [
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.115.12",
     "pydantic<2.11",
-    "pylint>=3.3.6",
     "redis>=5.2.1",
     "requests>=2.32.3",
     "sqlalchemy[asyncio]>=2.0.40",
@@ -22,5 +21,24 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy>=1.15.0",
+    "pylint>=3.3.6",
+    "types-requests>=2.32.0.20250328",
     "yapf>=0.43.0",
+]
+
+[tool.mypy]
+python_version = "3.12"
+disallow_untyped_defs = true
+show_error_codes = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unused_ignores = true
+exclude = ["src.backend.migrations"]
+
+
+[[tool.mypy.overrides]]
+module = [
+    "src.backend",
+    "src.tg_bot",
 ]
