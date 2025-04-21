@@ -60,7 +60,6 @@ async def get_user(group_id: int, session: AsyncGameSession) -> Group:
         result = await session.execute(stmt)
         group = result.scalar()
         if group is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Группы с таким tg_id не существует")
+            raise HTTPException(status_code=404,
+                                detail="Группы с таким tg_id не существует")
         return group

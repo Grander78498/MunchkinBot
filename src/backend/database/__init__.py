@@ -10,9 +10,24 @@ from typing import AsyncGenerator, Annotated
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import (AsyncSession, create_async_engine,
                                     async_sessionmaker, AsyncEngine)
+from sqlalchemy import MetaData
+from sqlmodel import SQLModel
 from fastapi import Depends
 
 from custom_exceptions import EnvException
+
+
+class CustomSQLModel(SQLModel):
+    metadata = MetaData(
+        naming_convention={
+            "ix": "ix_%(column_0_label)s",
+            "uq": "uq_%(table_name)s_%(column_0_name)s",
+            "ck": "ck_%(table_name)s_`%(constraint_name)s`",
+            "fk":
+            "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+            "pk": "pk_%(table_name)s"
+        })
+
 
 current_dir = Path().absolute()
 load_dotenv(current_dir.parent.parent.joinpath('.env'))
