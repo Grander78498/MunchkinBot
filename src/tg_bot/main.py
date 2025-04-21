@@ -1,11 +1,15 @@
+"""
+Главный файл для запуска бота
+"""
+
 import asyncio
 import logging
 import os
+from pathlib import Path
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from dotenv import load_dotenv
-from pathlib import Path
-from api_client import APIClient
+from tg_bot.utils.api_client import APIClient
 
 current_path = Path().absolute()
 load_dotenv(current_path.parent.parent.joinpath('.env'), override=True)
@@ -18,6 +22,7 @@ api_client = APIClient('http://127.0.0.1:8000')
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    """Обработка команды start"""
     result = api_client.save_user(message.from_user.id,
                                   message.from_user.username,
                                   message.from_user.full_name)
@@ -25,6 +30,7 @@ async def cmd_start(message: types.Message):
 
 
 async def main():
+    """Запуск бота"""
     await dp.start_polling(bot)
 
 
