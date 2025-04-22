@@ -21,11 +21,11 @@ async def create_game(group: GroupBase, session: AsyncGameSession) -> Game:
     async with session.begin():
         result = await session.execute(
             select(Group).where(Group.tg_id == group.tg_id))
-        group = result.scalar()
-        game = Game(group=group)
-        if game is None:
+        db_group = result.scalar()
+        if db_group is None:
             raise HTTPException(status_code=404,
                                 detail="Группы с таким tg_id не существует")
+        game = Game(group=db_group)
         session.add(game)
 
     return game
@@ -52,8 +52,8 @@ async def create_munchkin(game_id: int, user: UserBase,
         async with session.begin():
             result = await session.execute(
                 select(User).where(User.tg_id == user.tg_id))
-            user = result.scalar()
-            if user is None:
+            db_user = result.scalar()
+            if db_user is None:
                 raise HTTPException(
                     status_code=404,
                     detail="Пользователя с таким tg_id не существует")
@@ -65,7 +65,7 @@ async def create_munchkin(game_id: int, user: UserBase,
                 raise HTTPException(status_code=404,
                                     detail="Игры с таким id не существует")
 
-            munchkin = Munchkin(user=user, game=game)
+            munchkin = Munchkin(user=db_user, game=game)
             session.add(munchkin)
     except IntegrityError as e:
         raise HTTPException(

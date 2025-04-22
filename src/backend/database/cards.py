@@ -17,7 +17,7 @@ class CardBase(CustomSQLModel):
     name: str = Field(unique=True, max_length=64)
     image_path: str = Field(unique=True, max_length=64)
     description: str = Field(sa_type=Text, unique=True)
-    card_type: CardType = Field(sa_type=ENUM(CardType))
+    card_type: CardType = Field(sa_type=ENUM(CardType)) # type: ignore[call-overload]
     # action_group_id: int =
 
 
@@ -32,7 +32,7 @@ class Card(CardBase, table=True):
 class GameCard(CustomSQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     card_id: int = Field(foreign_key="card.id")
-    source_type: SourceType = Field(sa_type=ENUM(SourceType))
+    source_type: SourceType = Field(sa_type=ENUM(SourceType)) # type: ignore[call-overload]
     open: bool
 
     card: Card = lazy_relationship(back_populates="game_cards")
@@ -70,7 +70,7 @@ class MonsterBase(CustomSQLModel):
     strength: int = Field(default=1, sa_type=SmallInteger)
     treasure_count: int
     reward_level_count: int
-    monster_type: MonsterType | None = Field(sa_type=ENUM(MonsterType))
+    monster_type: MonsterType | None = Field(sa_type=ENUM(MonsterType)) # type: ignore[call-overload]
 
 
 class MonsterCreate(Door, MonsterBase):
@@ -91,10 +91,10 @@ class ItemBase(CustomSQLModel):
     is_hireling: bool
     price: int | None = Field(default=None, sa_type=SmallInteger)
 
-    item_type: ItemType | None = Field(default=None, sa_type=ENUM(ItemType))
+    item_type: ItemType | None = Field(default=None, sa_type=ENUM(ItemType)) # type: ignore[call-overload]
     hand_count: int | None = Field(default=None, sa_type=SmallInteger)
     item_property: ItemProperty | None = Field(default=None,
-                                               sa_type=ENUM(ItemProperty))
+                                               sa_type=ENUM(ItemProperty)) # type: ignore[call-overload]
 
 
 class ItemCreate(Treasure, ItemBase):

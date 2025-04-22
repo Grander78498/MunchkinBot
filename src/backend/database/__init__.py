@@ -3,6 +3,7 @@
 """
 
 import os
+from typing import Any
 
 from pathlib import Path
 from typing import AsyncGenerator, Annotated
@@ -46,7 +47,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-def lazy_relationship(*args, **kwargs):
+def lazy_relationship(*args, **kwargs) -> Any: #type: ignore [no-untyped-def]
     return Relationship(*args,
                         sa_relationship_kwargs={'lazy': 'selectin'},
                         **kwargs)

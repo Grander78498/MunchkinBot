@@ -37,7 +37,7 @@ class Munchkin(CustomSQLModel, table=True):
     user_id: int = Field(foreign_key="tg_user.tg_id")
     game_id: int = Field(foreign_key="game.id")
 
-    gender: Gender = Field(default=Gender.MALE, sa_type=ENUM(Gender))
+    gender: Gender = Field(default=Gender.MALE, sa_type=ENUM(Gender)) # type: ignore[call-overload]
     number: int = Field(default=-1, sa_type=SmallInteger)
     level: int = Field(default=1, sa_type=SmallInteger)
     strength: int = Field(default=1, sa_type=SmallInteger)
@@ -60,7 +60,7 @@ class Turn(CustomSQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     munchkin_id: int = Field(foreign_key="munchkin.id")
-    turn_type: TurnType = Field(sa_type=ENUM(TurnType))
+    turn_type: TurnType = Field(sa_type=ENUM(TurnType)) # type: ignore[call-overload]
 
     munchkin: Munchkin = lazy_relationship(back_populates="turns")
 

@@ -27,7 +27,7 @@ async def save_user(user: User, session: AsyncGameSession) -> Any:
 
 
 @router.post('/group', response_model=SuccessfulResponse)
-async def save_user(group: Group, session: AsyncGameSession) -> Any:
+async def save_group(group: Group, session: AsyncGameSession) -> Any:
     """Сохранение информации о группе"""
 
     async with session.begin():
@@ -52,7 +52,7 @@ async def get_user(user_id: int, session: AsyncGameSession) -> User:
 
 
 @router.get('/group/{group_id}')
-async def get_user(group_id: int, session: AsyncGameSession) -> Group:
+async def get_group(group_id: int, session: AsyncGameSession) -> Group:
     """Получение информации о группе"""
 
     async with session.begin():
