@@ -7,7 +7,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 from backend.database import AsyncGameSession
-from backend.database.models import User, Group
+from backend.database.users import User, Group
 from backend.database.responses import SuccessfulResponse
 
 router = APIRouter(

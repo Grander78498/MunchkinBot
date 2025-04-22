@@ -1,16 +1,13 @@
 """
 Получение информации о манчкине
 """
-
-from typing import Any
-
 from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
-from sqlalchemy.orm import selectinload
-import asyncpg
+
 from backend.database import AsyncGameSession
-from backend.database.models import User, UserBase, Group, GroupBase, Munchkin, Game
+from backend.database.users import User, UserBase, Group, GroupBase
+from backend.database.game import Munchkin, Game
 from backend.database.responses import SuccessfulResponse
 
 router = APIRouter(
@@ -70,10 +67,10 @@ async def create_munchkin(game_id: int, user: UserBase,
 
             munchkin = Munchkin(user=user, game=game)
             session.add(munchkin)
-    except IntegrityError:
+    except IntegrityError as e:
         raise HTTPException(
             status_code=404,
-            detail="Пользователь уже есть в данной игровой партии")
+            detail="Пользователь уже есть в данной игровой партии") from e
 
     return munchkin
 

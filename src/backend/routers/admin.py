@@ -2,20 +2,16 @@
 Управление карточками
 """
 
-from typing import Any
-
 from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, HTTPException
-from sqlmodel import select
-import asyncpg
 from backend.database import AsyncGameSession
-from backend.database.models import ItemBase, ItemCreate, Item, Card
-from backend.database.responses import SuccessfulResponse
+from backend.database.cards import ItemCreate, Item, Card
 
 router = APIRouter(
     prefix='/admin',
     tags=['Admin game'],
 )
+
 
 @router.post('/item')
 async def create_item(item: ItemCreate, session: AsyncGameSession) -> Item:
@@ -26,9 +22,9 @@ async def create_item(item: ItemCreate, session: AsyncGameSession) -> Item:
 
             db_item = Item(card=db_card, **item.model_dump())
             session.add(db_item)
-        
+
         return db_item
-    except IntegrityError:
+    except IntegrityError as e:
         raise HTTPException(
             status_code=404,
-            detail="Присутствуют повторяющиеся поля в карточке")
+            detail="Присутствуют повторяющиеся поля в карточке") from e

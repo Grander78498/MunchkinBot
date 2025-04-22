@@ -12,7 +12,12 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 import alembic_postgresql_enum
 
-from backend.database.models import CustomSQLModel
+from backend.database.enums import *
+from backend.database.link_models import *
+from backend.database.users import *
+from backend.database.game import *
+from backend.database.cards import *
+from backend.database import CustomSQLModel
 
 current_dir = Path().absolute()
 load_dotenv(current_dir.parent.parent.joinpath('.env'))

@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import (AsyncSession, create_async_engine,
                                     async_sessionmaker, AsyncEngine)
 from sqlalchemy import MetaData
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Relationship
 from fastapi import Depends
 
 from custom_exceptions import EnvException
@@ -44,6 +44,12 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
         yield session
+
+
+def lazy_relationship(*args, **kwargs):
+    return Relationship(*args,
+                        sa_relationship_kwargs={'lazy': 'selectin'},
+                        **kwargs)
 
 
 AsyncGameSession = Annotated[AsyncSession, Depends(get_session)]
