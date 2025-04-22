@@ -4,7 +4,7 @@
 
 from typing import Any
 
-import sqlalchemy
+from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
@@ -70,7 +70,7 @@ async def create_munchkin(game_id: int, user: UserBase,
 
             munchkin = Munchkin(user=user, game=game)
             session.add(munchkin)
-    except sqlalchemy.exc.IntegrityError as e:
+    except IntegrityError:
         raise HTTPException(
             status_code=404,
             detail="Пользователь уже есть в данной игровой партии")
