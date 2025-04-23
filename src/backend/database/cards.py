@@ -6,11 +6,41 @@ from sqlalchemy import SmallInteger, Text
 from sqlalchemy.dialects.postgresql import ENUM
 
 from backend.database import CustomSQLModel, lazy_relationship
-from backend.database.link_models import MunchkinCard, MunchkinItem
-from backend.database.enums import CardType, SourceType, MonsterType, ItemProperty, ItemType
+from backend.database.link_models import MunchkinCard, MunchkinItem, MonsterCombat, MunchkinStats, CardAction, ItemCondition, ActionMonster
+from backend.database.enums import CardType, SourceType
 
 if TYPE_CHECKING:
-    from backend.database.game import Munchkin
+    from backend.database.game import Munchkin, Combat
+    from backend.database.actions import Action
+    from backend.database.conditions import Condition
+
+
+class ItemType(CustomSQLModel, table = True):
+    id: int | None = Field(default=None, primary_key=True)
+    item_type: str = Field(max_length=64)
+
+    items: list["Item"] = lazy_relationship(back_populates="item_type")
+
+
+class ItemProperty(CustomSQLModel, table = True):
+    id: int | None = Field(default=None, primary_key=True)
+    item_property: str = Field(max_length=64)
+
+    items: list["Item"] = lazy_relationship(back_populates="item_property")
+
+
+class MonsterType(CustomSQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    monster_type: str = Field(max_length=64)
+
+    monsters: list["Monster"] = lazy_relationship(back_populates="monster_type")
+    
+
+class StatsType(CustomSQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    stats_type: str = Field(max_length=64)
+
+    stats_cards: list["Stats"] = lazy_relationship(back_populates="stats_type")
 
 
 class CardBase(CustomSQLModel):
@@ -27,6 +57,8 @@ class Card(CardBase, table=True):
     game_cards: list["GameCard"] = lazy_relationship(back_populates="card")
     item: Optional["Item"] = lazy_relationship(back_populates="card")
     monster: Optional["Monster"] = lazy_relationship(back_populates="card")
+
+    actions: list["Action"] = lazy_relationship(back_populates="cards", link_model=CardAction)
 
 
 class GameCard(CustomSQLModel, table=True):
@@ -70,7 +102,8 @@ class MonsterBase(CustomSQLModel):
     strength: int = Field(default=1, sa_type=SmallInteger)
     treasure_count: int
     reward_level_count: int
-    monster_type: MonsterType | None = Field(sa_type=ENUM(MonsterType)) # type: ignore[call-overload]
+    monster_type_id: int | None = Field(default=None, foreign_key="monstertype.id")
+
 
 
 class MonsterCreate(Door, MonsterBase):
@@ -81,6 +114,27 @@ class Monster(MonsterBase, table=True):
     card_id: int = Field(foreign_key="card.id", primary_key=True)
 
     card: Card = lazy_relationship(back_populates="monster")
+    combats: list["Combat"] = lazy_relationship(back_populates="monsters", link_model=MonsterCombat)
+    monster_type: MonsterType | None = lazy_relationship(back_populates="monsters")
+    actions: list["Action"] = lazy_relationship(back_populates="monsters", link_model=ActionMonster)
+
+
+class StatsBase(CustomSQLModel):
+    stats_type_id: int = Field(foreign_key="statstype.id")
+
+
+
+class StatsCreate(Door, StatsBase):
+    pass
+
+
+class Stats(MonsterBase, table=True):
+    card_id: int = Field(foreign_key="card.id", primary_key=True)
+
+    card: Card = lazy_relationship(back_populates="monster")
+    munchkins: list["Munchkin"] = lazy_relationship(back_populates="stats",
+                                                    link_model=MunchkinStats)
+    stats_type: StatsType = lazy_relationship(back_populates="stats_cards")
 
 
 class ItemBase(CustomSQLModel):
@@ -90,11 +144,10 @@ class ItemBase(CustomSQLModel):
     is_big: bool
     is_hireling: bool
     price: int | None = Field(default=None, sa_type=SmallInteger)
+    item_type_id: int | None = Field(default=None, foreign_key="itemtype.id")
+    item_property_id: int | None = Field(default=None, foreign_key="itemproperty.id")
 
-    item_type: ItemType | None = Field(default=None, sa_type=ENUM(ItemType)) # type: ignore[call-overload]
     hand_count: int | None = Field(default=None, sa_type=SmallInteger)
-    item_property: ItemProperty | None = Field(default=None,
-                                               sa_type=ENUM(ItemProperty)) # type: ignore[call-overload]
 
 
 class ItemCreate(Treasure, ItemBase):
@@ -107,6 +160,10 @@ class Item(ItemBase, table=True):
     card: Card = lazy_relationship(back_populates="item")
     game_items: list["GameItem"] = lazy_relationship(
         back_populates="original_item")
+    item_type_id: ItemType | None = lazy_relationship(back_populates="items")
+    item_property: ItemProperty | None = lazy_relationship(back_populates="items")
+
+    conditions: list["Condition"] = lazy_relationship(back_populates="items", link_model=ItemCondition)
 
 
 class GameItem(ItemBase, table=True):

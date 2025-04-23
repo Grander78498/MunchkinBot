@@ -4,6 +4,7 @@ from enum import Enum
 class Gender(str, Enum):
     MALE = 'male'
     FEMALE = 'female'
+    OTHER = 'other'
 
 
 class TurnType(str, Enum):
@@ -19,19 +20,6 @@ class CardType(str, Enum):
     TREASURE = 'treasure'
 
 
-class ItemType(str, Enum):
-    HEADGEAR = 'головняк'
-    ARMOR = 'броник'
-    FOOTGEAR = 'обувка'
-    HAND = 'рука'
-
-
-class ItemProperty(str, Enum):
-    FLAME = 'огненная'
-    WOODEN = 'древесная'
-    STICK = 'палка/жезл/посох'
-
-
 class SourceType(str, Enum):
     DOOR_DECK = 'колода дверей'
     TREASURE_DECK = 'колода сокровищ'
@@ -40,5 +28,10 @@ class SourceType(str, Enum):
     PLAYER = 'игрок'
 
 
-class MonsterType(str, Enum):
-    UNDEAD = 'undead'
+class EqualType(str, Enum):
+    LT = 'less than'
+    LE = 'less equal'
+    EQ = 'equal'
+    NQ = 'not equal'
+    GE = 'greater equal'
+    GT = 'greater than'

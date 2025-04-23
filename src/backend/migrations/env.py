@@ -17,6 +17,8 @@ from backend.database.link_models import *
 from backend.database.users import *
 from backend.database.game import *
 from backend.database.cards import *
+from backend.database.actions import *
+from backend.database.conditions import *
 from backend.database import CustomSQLModel
 
 current_dir = Path().absolute()

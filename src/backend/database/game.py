@@ -5,12 +5,13 @@ from sqlalchemy import UniqueConstraint, SmallInteger
 from sqlalchemy.dialects.postgresql import ENUM
 
 from backend.database import CustomSQLModel, lazy_relationship
-from backend.database.link_models import MunchkinCard, MunchkinCombat, MunchkinItem
+from backend.database.link_models import MunchkinCard, MunchkinCombat, MunchkinItem, MonsterCombat, MunchkinStats, ActionMunchkin
 from backend.database.enums import Gender, TurnType
 
 if TYPE_CHECKING:
     from backend.database.users import User, Group
-    from backend.database.cards import GameCard, GameItem
+    from backend.database.cards import GameCard, GameItem, Monster, Stats
+    from backend.database.actions import Action
 
 
 class Game(CustomSQLModel, table=True):
@@ -54,6 +55,10 @@ class Munchkin(CustomSQLModel, table=True):
                                                 link_model=MunchkinCard)
     items: list["GameItem"] = lazy_relationship(back_populates="munchkins",
                                                 link_model=MunchkinItem)
+    stats: list["Stats"] = lazy_relationship(back_populates="munchkins",
+                                                    link_model=MunchkinStats)
+    actions: list["Action"] = lazy_relationship(back_populates="munchkins",
+                                                    link_model=ActionMunchkin)
 
 
 class Turn(CustomSQLModel, table=True):
@@ -78,3 +83,5 @@ class Combat(CustomSQLModel, table=True):
 
     munchkins: list[Munchkin] = lazy_relationship(back_populates="combats",
                                                   link_model=MunchkinCombat)
+    monsters: list["Monster"] = lazy_relationship(back_populates="combats",
+                                                  link_model=MonsterCombat)
