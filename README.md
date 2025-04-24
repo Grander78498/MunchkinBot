@@ -30,40 +30,60 @@
 ## Архитектура проекта
 
 ```
-MunchkinBot/
-├── img/
-    ├── Кликхаусов_Владислав_Игоревич.jpg
-    ├── Коротков_Александр_Дмитриевич.jpg
-    ├── Леонидов_Егор_Алексеевич.jpg
-    └── Яськов_Леонид_Владимирович.jpg
-├── src/
-    ├── backend/
-        ├── pycache/
-        ├── models/
-            ├── __pycache__/
-            ├── __init__.py
-            ├── cards_db.py
-            └── game_db.py
-        ├── routers/
-            ├── __pycache__/
-            ├── __init__.py
-            └── users.py
-        ├── __init__.py
-        └── main.py
-    └── tg_bot/
-        ├── pycache/
-        ├── init.py
-        ├── api_client.py
-        └── main.py
-├── .gitignore
-├── .python-version
-├── CREATE_cards.sql
-├── CREATE_game.sql
-├── INSERT_cards.sql
-├── INSERT_game.sql
-├── munchkin.json
+MunchkinBot
+├── CREATE.sql
+├── img
+│   ├── Кликхаусов_Владислав_Игоревич.JPG
+│   ├── Коротков_Александр_Дмитриевич.jpg
+│   ├── Леонидов_Егор_Алексеевич.jpg
+│   └── Яськов_Леонид_Владимирович.jpg
+├── INSERT.sql
+├── muchkin.json
 ├── pyproject.toml
 ├── README.md
+├── src
+│   ├── backend
+│   │   ├── alembic.ini
+│   │   ├── database
+│   │   │   ├── actions.py
+│   │   │   ├── cards.py
+│   │   │   ├── conditions.py
+│   │   │   ├── enums.py
+│   │   │   ├── functions.py
+│   │   │   ├── game.py
+│   │   │   ├── __init__.py
+│   │   │   ├── link_models.py
+│   │   │   ├── responses.py
+│   │   │   └── users.py
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── migrations
+│   │   │   ├── env.py
+│   │   │   ├── README
+│   │   │   ├── script.py.mako
+│   │   │   └── versions
+│   │   │       ├── 10d47fda113c_munchkin_cards_update.py
+│   │   │       ├── 284bdc00f806_init.py
+│   │   │       ├── 4c77dd162bbb_cards_and_items.py
+│   │   │       ├── 6bdf256496c6_munchkin.py
+│   │   │       ├── 81de717a5c61_the_last.py
+│   │   │       ├── a443e19ad380_simplify_item_and_monster.py
+│   │   │       ├── ae56d122db5d_fix_field_name.py
+│   │   │       ├── c19bfe0dbfab_on_progress.py
+│   │   │       ├── dd6c994e59e5_final.py
+│   │   │       └── e136fc120501_fix1.py
+│   │   └── routers
+│   │       ├── admin.py
+│   │       ├── game.py
+│   │       ├── __init__.py
+│   │       └── telegram.py
+│   ├── custom_exceptions.py
+│   └── tg_bot
+│       ├── __init__.py
+│       ├── main.py
+│       └── utils
+│           ├── api_client.py
+│           └── __init__.py
 └── uv.lock
 ```
 
