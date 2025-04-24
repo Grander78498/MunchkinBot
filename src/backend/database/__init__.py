@@ -3,14 +3,13 @@
 """
 
 import os
-from typing import Any
 
 from pathlib import Path
-from typing import AsyncGenerator, Annotated
+from typing import Any, AsyncGenerator, Annotated
 
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import (AsyncSession, create_async_engine,
-                                    async_sessionmaker, AsyncEngine)
+                                    async_sessionmaker)
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel, Relationship
 from fastapi import Depends
@@ -19,6 +18,11 @@ from custom_exceptions import EnvException
 
 
 class CustomSQLModel(SQLModel):
+    """
+    Надстройка над базовым SQLModel,
+    чтобы встроить автоматическое наименование constraint
+    """
+
     metadata = MetaData(
         naming_convention={
             "ix": "ix_%(column_0_label)s",
@@ -47,7 +51,8 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-def lazy_relationship(*args, **kwargs) -> Any: #type: ignore [no-untyped-def]
+def lazy_relationship(*args, **kwargs) -> Any:  #type: ignore [no-untyped-def]
+    """Relationship, который легче использовать в асинхронных запросах"""
     return Relationship(*args,
                         sa_relationship_kwargs={'lazy': 'selectin'},
                         **kwargs)

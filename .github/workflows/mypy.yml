@@ -1,4 +1,4 @@
-name: Pylint
+name: Mypy
 
 on: [push]
 
@@ -20,7 +20,7 @@ jobs:
 
       - name: Install the project
         run: uv sync --all-extras --dev
-
-      - name: Analysing the code with pylint
+        
+      - name: Static analysing code with mypy
         run: |
-              uv run pylint $(git ls-files '*.py')
+              uv run mypy .

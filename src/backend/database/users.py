@@ -1,3 +1,8 @@
+"""
+Таблицы для хранения информации, связанной с телеграмом
+(может, переименовать в telegram.py?)
+"""
+
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field
@@ -9,11 +14,7 @@ if TYPE_CHECKING:
     from backend.database.game import Munchkin, Game
 
 
-class UserBase(CustomSQLModel):
-    tg_id: int
-
-
-class User(UserBase, table=True):
+class User(CustomSQLModel, table=True):
     """Пользователь"""
 
     __tablename__ = 'tg_user'
@@ -26,11 +27,7 @@ class User(UserBase, table=True):
     munchkins: list["Munchkin"] = lazy_relationship(back_populates="user")
 
 
-class GroupBase(CustomSQLModel):
-    tg_id: int
-
-
-class Group(GroupBase, table=True):
+class Group(CustomSQLModel, table=True):
     """Телеграм группа"""
 
     __tablename__ = 'tg_group'

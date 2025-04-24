@@ -15,6 +15,7 @@ router = APIRouter(
 
 @router.post('/item')
 async def create_item(item: ItemCreate, session: AsyncGameSession) -> Item:
+    """Создание шмотки"""
     try:
         async with session.begin():
             db_card = Card.model_validate(item)

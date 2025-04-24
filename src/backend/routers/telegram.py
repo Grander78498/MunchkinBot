@@ -4,9 +4,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
-from sqlmodel import select
+from fastapi import APIRouter
 from backend.database import AsyncGameSession
+from backend.database.functions import get_user, get_group
 from backend.database.users import User, Group
 from backend.database.responses import SuccessfulResponse
 
@@ -37,29 +37,18 @@ async def save_group(group: Group, session: AsyncGameSession) -> Any:
 
 
 @router.get('/user/{user_id}')
-async def get_user(user_id: int, session: AsyncGameSession) -> User:
+async def get_user_info(user_id: int, session: AsyncGameSession) -> User:
     """Получение информации о пользователе"""
 
     async with session.begin():
-        stmt = select(User).where(User.tg_id == user_id)
-        result = await session.execute(stmt)
-        user = result.scalar()
-        if user is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Пользователя с таким tg_id не существует")
+        user = await get_user(user_id, session)
         return user
 
 
 @router.get('/group/{group_id}')
-async def get_group(group_id: int, session: AsyncGameSession) -> Group:
+async def get_group_info(group_id: int, session: AsyncGameSession) -> Group:
     """Получение информации о группе"""
 
     async with session.begin():
-        stmt = select(Group).where(Group.tg_id == group_id)
-        result = await session.execute(stmt)
-        group = result.scalar()
-        if group is None:
-            raise HTTPException(status_code=404,
-                                detail="Группы с таким tg_id не существует")
+        group = await get_group(group_id, session)
         return group
