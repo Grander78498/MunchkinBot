@@ -5,10 +5,12 @@
 from typing import Any
 
 from fastapi import FastAPI
-from backend.routers import users
+from backend.routers import game, telegram, admin
 
 app = FastAPI()
-app.include_router(users.router)
+app.include_router(telegram.router)
+app.include_router(game.router)
+app.include_router(admin.router)
 
 
 @app.get('/')

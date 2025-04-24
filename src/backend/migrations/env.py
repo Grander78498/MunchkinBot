@@ -12,7 +12,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 import alembic_postgresql_enum
 
-from backend.database.models import SQLModel
+from backend.database.enums import *
+from backend.database.link_models import *
+from backend.database.users import *
+from backend.database.game import *
+from backend.database.cards import *
+from backend.database.actions import *
+from backend.database.conditions import *
+from backend.database import CustomSQLModel
 
 current_dir = Path().absolute()
 load_dotenv(current_dir.parent.parent.joinpath('.env'))
@@ -22,7 +29,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = SQLModel.metadata
+target_metadata = CustomSQLModel.metadata
 
 
 def run_migrations_offline() -> None:

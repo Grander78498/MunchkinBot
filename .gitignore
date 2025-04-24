@@ -6,6 +6,8 @@ dist/
 wheels/
 *.egg-info
 cards
+.idea
+*_cache
 
 # Virtual environments
 .venv
