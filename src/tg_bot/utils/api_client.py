@@ -44,13 +44,15 @@ class APIClient:
         Returns:
             dict[str, Any]: Ответ от сервера
         """
-
-        response = requests.request(method=method,
-                                    url=self.base_url + url,
-                                    params=json.dumps(path_params),
-                                    data=json.dumps(body),
-                                    timeout=1)
-        return response.json()
+        try:
+            response = requests.request(method=method,
+                                        url=self.base_url + url,
+                                        params=json.dumps(path_params),
+                                        data=json.dumps(body),
+                                        timeout=1)
+            return {'ok': True, **response.json()}
+        except requests.exceptions.ConnectTimeout:
+            return {'ok': False, 'msg': 'API error'}
 
     def save_user(self, tg_id: int, user_name: str | None,
                   full_name: str) -> Any:
