@@ -1,0 +1,47 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    name: Python
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras --dev
+          uv pip install flake8 black mypy pytest coverage codecov safety
+
+      - name: Format check with black
+        run: |
+          uv run black --diff .
+          uv run black --check .
+
+      - name: Lint with flake8
+        run: uv run flake8 .
+
+      - name: Static type check with mypy
+        run: uv run mypy .
+
+      - name: Run tests and show coverage
+        run: |
+          if ls src/tests/**/test_*.py 1> /dev/null 2>&1; then
+            uv run coverage run -m pytest
+            uv run coverage report --show-missing
+          else
+            echo "No test files found in src/tests. Skipping tests."
+          fi
+
+      - name: Security audit with safety
+        run: uv run safety check --full-report
