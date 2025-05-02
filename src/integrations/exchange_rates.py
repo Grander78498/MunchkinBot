@@ -9,8 +9,8 @@ import requests
 from fake_useragent import UserAgent
 
 headers = {
-    'user-agent': UserAgent().random,
-    'X-Requested-With': 'XMLHttpRequest'
+    "user-agent": UserAgent().random,
+    "X-Requested-With": "XMLHttpRequest",
 }
 
 
@@ -28,7 +28,7 @@ class Currencies(str, Enum):
 def get_exchange_rate(currency: Currencies) -> float:
     """
     Получает текущий курс валюты с сайта Центробанка РФ
-    
+
     :param currency: Валюта из перечисления Currencies
     :return: Текущий курс валюты
     """

@@ -46,12 +46,12 @@ class Language(str, Enum):
 
 def read_text(key: str, lang: Language) -> str:
     """Считывание текстовой информации из json
-    
+
     Args:
         key (str) - ключ
         lang (str) - язык пользователя
     """
-    with open('docs.json', 'r', encoding='utf-8') as file:
+    with open("docs.json", "r", encoding="utf-8") as file:
         texts = json.load(file)
         return texts[key][lang]
 
@@ -60,13 +60,13 @@ current_path = Path().absolute()
 load_dotenv(current_path.parent.parent.joinpath('.env'), override=True)
 
 logging.basicConfig(level=logging.INFO)
-token = os.getenv('BOT_TOKEN')
+token = os.getenv("BOT_TOKEN")
 if token is None:
-    raise EnvException('Отсутствует переменная среды BOT_TOKEN')
+    raise EnvException("Отсутствует переменная среды BOT_TOKEN")
 
 bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
-api_client = APIClient('http://127.0.0.1:8000')
+api_client = APIClient("http://127.0.0.1:8000")
 
 
 @dp.message(Command("start"))
@@ -74,7 +74,7 @@ async def cmd_start(message: Message) -> None:
     """Обработка команды start"""
     user = message.from_user
     if user is None:
-        raise TGException('Ошибка при получении отправителя сообщения')
+        raise TGException("Ошибка при получении отправителя сообщения")
     api_client.save_user(user.id, user.username, user.full_name)
     await message.answer(read_text("start", Language.RU))
 
@@ -144,12 +144,12 @@ async def transparent_policies(call: CallbackQuery):
 async def cmd_world(message: Message) -> None:
     """Выдача актуальных валют"""
     builder = InlineKeyboardBuilder()
-    builder.button(text='Трамп', callback_data="tru")
-    builder.button(text='Евро', callback_data="Ursula")
-    builder.button(text='Нефритовый стержень', callback_data="XI")
-    builder.button(text='Бульба', callback_data="Bel")
-    builder.button(text='Дирхам ОАЭ', callback_data="OAE")
-    builder.button(text='Сингапур', callback_data="SGD")
+    builder.button(text="Трамп", callback_data="tru")
+    builder.button(text="Евро", callback_data="Ursula")
+    builder.button(text="Нефритовый стержень", callback_data="XI")
+    builder.button(text="Бульба", callback_data="Bel")
+    builder.button(text="Дирхам ОАЭ", callback_data="OAE")
+    builder.button(text="Сингапур", callback_data="SGD")
     builder.adjust(2)
     await message.answer("Выбери СВОего героя",
                          reply_markup=builder.as_markup())
