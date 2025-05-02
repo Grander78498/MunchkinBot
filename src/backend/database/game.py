@@ -1,6 +1,4 @@
-"""
-Таблица для хранения основной информации об игре
-"""
+"""Таблица для хранения основной информации об игре."""
 
 from typing import TYPE_CHECKING
 
@@ -9,9 +7,14 @@ from sqlalchemy import UniqueConstraint, SmallInteger
 from sqlalchemy.dialects.postgresql import ENUM
 
 from backend.database import CustomSQLModel, lazy_relationship
-from backend.database.link_models import (MunchkinCard, MunchkinCombat,
-                                          MunchkinItem, MonsterCombat,
-                                          MunchkinStats, ActionMunchkin)
+from backend.database.link_models import (
+    MunchkinCard,
+    MunchkinCombat,
+    MunchkinItem,
+    MonsterCombat,
+    MunchkinStats,
+    ActionMunchkin,
+)
 from backend.database.enums import Gender, TurnType
 
 if TYPE_CHECKING:
@@ -21,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class Game(CustomSQLModel, table=True):
-    """Информация об игровой партии"""
+    """Информация об игровой партии."""
 
     id: int | None = Field(default=None, primary_key=True)
     group_id: int = Field(foreign_key="tg_group.tg_id")
@@ -35,17 +38,18 @@ class Game(CustomSQLModel, table=True):
 
 
 class Munchkin(CustomSQLModel, table=True):
-    """Информация о манчкине"""
+    """Информация о манчкине."""
 
-    __table_args__ = (UniqueConstraint("user_id", "game_id"), )
+    __table_args__ = (UniqueConstraint("user_id", "game_id"),)
 
     id: int | None = Field(default=None, primary_key=True)
 
     user_id: int = Field(foreign_key="tg_user.tg_id")
     game_id: int = Field(foreign_key="game.id")
 
-    gender: Gender = Field(default=Gender.MALE,
-                           sa_type=ENUM(Gender))  # type: ignore[call-overload]
+    gender: Gender = Field(
+        default=Gender.MALE, sa_type=ENUM(Gender)
+    )  # type: ignore[call-overload]
     number: int = Field(default=-1, sa_type=SmallInteger)
     level: int = Field(default=1, sa_type=SmallInteger)
     strength: int = Field(default=1, sa_type=SmallInteger)
@@ -56,31 +60,37 @@ class Munchkin(CustomSQLModel, table=True):
     game: Game = lazy_relationship(back_populates="munchkins")
 
     turns: list["Turn"] = lazy_relationship(back_populates="munchkin")
-    combats: list["Combat"] = lazy_relationship(back_populates="munchkins",
-                                                link_model=MunchkinCombat)
-    cards: list["GameCard"] = lazy_relationship(back_populates="munchkins",
-                                                link_model=MunchkinCard)
-    items: list["GameItem"] = lazy_relationship(back_populates="munchkins",
-                                                link_model=MunchkinItem)
-    stats: list["Stats"] = lazy_relationship(back_populates="munchkins",
-                                             link_model=MunchkinStats)
-    actions: list["Action"] = lazy_relationship(back_populates="munchkins",
-                                                link_model=ActionMunchkin)
+    combats: list["Combat"] = lazy_relationship(
+        back_populates="munchkins", link_model=MunchkinCombat
+    )
+    cards: list["GameCard"] = lazy_relationship(
+        back_populates="munchkins", link_model=MunchkinCard
+    )
+    items: list["GameItem"] = lazy_relationship(
+        back_populates="munchkins", link_model=MunchkinItem
+    )
+    stats: list["Stats"] = lazy_relationship(
+        back_populates="munchkins", link_model=MunchkinStats
+    )
+    actions: list["Action"] = lazy_relationship(
+        back_populates="munchkins", link_model=ActionMunchkin
+    )
 
 
 class Turn(CustomSQLModel, table=True):
-    """Информация о ходе манчкина"""
+    """Информация о ходе манчкина."""
+
     id: int | None = Field(default=None, primary_key=True)
 
     munchkin_id: int = Field(foreign_key="munchkin.id")
-    turn_type: TurnType = Field(
-        sa_type=ENUM(TurnType))  # type: ignore[call-overload]
+    turn_type: TurnType = Field(sa_type=ENUM(TurnType))  # type: ignore[call-overload]
 
     munchkin: Munchkin = lazy_relationship(back_populates="turns")
 
 
 class Combat(CustomSQLModel, table=True):
-    """Информация о бое"""
+    """Информация о бое."""
+
     id: int | None = Field(default=None, primary_key=True)
     game_id: int = Field(foreign_key="game.id")
     difference: int = Field(sa_type=SmallInteger)
@@ -91,7 +101,9 @@ class Combat(CustomSQLModel, table=True):
 
     game: Game = lazy_relationship(back_populates="combats")
 
-    munchkins: list[Munchkin] = lazy_relationship(back_populates="combats",
-                                                  link_model=MunchkinCombat)
-    monsters: list["Monster"] = lazy_relationship(back_populates="combats",
-                                                  link_model=MonsterCombat)
+    munchkins: list[Munchkin] = lazy_relationship(
+        back_populates="combats", link_model=MunchkinCombat
+    )
+    monsters: list["Monster"] = lazy_relationship(
+        back_populates="combats", link_model=MonsterCombat
+    )

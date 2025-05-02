@@ -1,6 +1,4 @@
-"""
-Управление карточками
-"""
+"""Управление карточками."""
 
 from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, HTTPException
@@ -8,14 +6,14 @@ from backend.database import AsyncGameSession
 from backend.database.cards import ItemCreate, Item, Card
 
 router = APIRouter(
-    prefix='/admin',
-    tags=['Admin game'],
+    prefix="/admin",
+    tags=["Admin game"],
 )
 
 
-@router.post('/item')
+@router.post("/item")
 async def create_item(item: ItemCreate, session: AsyncGameSession) -> Item:
-    """Создание шмотки"""
+    """Создание шмотки."""
     try:
         async with session.begin():
             db_card = Card.model_validate(item)
@@ -27,5 +25,5 @@ async def create_item(item: ItemCreate, session: AsyncGameSession) -> Item:
         return db_item
     except IntegrityError as e:
         raise HTTPException(
-            status_code=404,
-            detail="Присутствуют повторяющиеся поля в карточке") from e
+            status_code=404, detail="Присутствуют повторяющиеся поля в карточке"
+        ) from e

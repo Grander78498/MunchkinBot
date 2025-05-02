@@ -21,8 +21,16 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "bandit>=1.8.3",
+    "black>=25.1.0",
+    "codespell>=2.4.1",
+    "coverage>=7.8.0",
+    "detect-secrets>=1.5.0",
     "mypy>=1.15.0",
+    "pycycle>=0.0.8",
+    "pydocstyle>=6.3.0",
     "pylint>=3.3.6",
+    "radon>=6.0.1",
     "types-requests>=2.32.0.20250328",
     "yapf>=0.43.0",
 ]

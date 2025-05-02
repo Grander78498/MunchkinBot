@@ -1,39 +1,25 @@
 name: CI
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  build-and-test:
-    name: Python
+  install-project:
+    name: Install the project
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - name: Set up environment
+        uses: ./.github/actions/setup-env  # Локальный action
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: ".python-version"
-
-      - name: Install dependencies
-        run: |
-          uv sync --all-extras --dev
-          uv pip install flake8 black mypy pytest coverage codecov safety
-
-      - name: Format check with black
-        run: |
-          uv run black --diff .
-          uv run black --check .
-
-      - name: Lint with flake8
-        run: uv run flake8 .
-
-      - name: Static type check with mypy
-        run: uv run mypy .
-
+  coverage:
+    name: Coverage
+    needs: install-project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
       - name: Run tests and show coverage
         run: |
           if ls src/tests/**/test_*.py 1> /dev/null 2>&1; then
@@ -43,5 +29,124 @@ jobs:
             echo "No test files found in src/tests. Skipping tests."
           fi
 
-      - name: Security audit with safety
-        run: uv run safety check --full-report
+  cyclomatic:
+    name: Cyclomatic
+    needs: install-project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Cyclomatic complexity check
+        run: |
+          uv run radon cc $(git ls-files '*.py') -a -nc
+
+  docstring:
+    name: Docstring
+    needs: install-project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Docstrings analysis
+        run: |
+          uv run pydocstyle $(git ls-files '*.py' | grep -v '^src/backend/migrations/' | grep -v '__init__')
+
+  mutation:
+    name: Mutation
+    needs: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Run mutation tests
+        run: |
+          if ls src/tests/**/test_*.py 1> /dev/null 2>&1; then
+            uv run mutmut run --paths-to-mutate=$(git ls-files '*.py')
+            uv run mutmut results
+          else
+            echo "No test files found in src/tests. Skipping tests."
+          fi
+
+  static:
+    name: Static
+    needs: install-project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Static analysing code with mypy
+        run: |
+          uv run mypy .
+
+  black:
+    name: Format(Black)
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Format check with black
+        run: |
+          uv run black --line-length 80 --diff $(git ls-files '*.py')
+
+  pylint:
+    name: Format(PyLint)
+    needs: black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Analysing the code with pylint
+        run: |
+          uv run pylint $(git ls-files '*.py')
+
+  cyclic-test:
+    name: Cyclic Dependencies
+    needs: pylint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Cyclic dependencies analysis with pycycle
+        run: |
+          uv run pycycle --here --ignore .venv
+
+  security:
+    name: Security
+    needs: install-project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Security lint with bandit
+        run: |
+          uv run bandit -r $(git ls-files '*.py')
+
+  spelling:
+    name: Spelling
+    needs: install-project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up
+        uses: ./.github/actions/setup-env  # Локальный action
+
+      - name: Check spelling
+        run: |
+          uv run codespell . --skip="__init__.py,.venv,.git,migrations,uv.lock"

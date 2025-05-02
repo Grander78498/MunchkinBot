@@ -1,6 +1,4 @@
-"""
-Получение информации о пользователях
-"""
+"""Получение информации о пользователях."""
 
 from typing import Any
 
@@ -11,44 +9,40 @@ from backend.database.users import User, Group
 from backend.database.responses import SuccessfulResponse
 
 router = APIRouter(
-    prefix='/telegram',
-    tags=['Telegram'],
+    prefix="/telegram",
+    tags=["Telegram"],
 )
 
 
-@router.post('/user', response_model=SuccessfulResponse)
+@router.post("/user", response_model=SuccessfulResponse)
 async def save_user(user: User, session: AsyncGameSession) -> Any:
-    """Сохранение информации о пользователе"""
-
+    """Сохранение информации о пользователе."""
     async with session.begin():
         session.add(user)
 
-    return {'msg': "All good"}
+    return {"msg": "All good"}
 
 
-@router.post('/group', response_model=SuccessfulResponse)
+@router.post("/group", response_model=SuccessfulResponse)
 async def save_group(group: Group, session: AsyncGameSession) -> Any:
-    """Сохранение информации о группе"""
-
+    """Сохранение информации о группе."""
     async with session.begin():
         session.add(group)
 
-    return {'msg': "All good"}
+    return {"msg": "All good"}
 
 
-@router.get('/user/{user_id}')
+@router.get("/user/{user_id}")
 async def get_user_info(user_id: int, session: AsyncGameSession) -> User:
-    """Получение информации о пользователе"""
-
+    """Получение информации о пользователе."""
     async with session.begin():
         user = await get_user(user_id, session)
         return user
 
 
-@router.get('/group/{group_id}')
+@router.get("/group/{group_id}")
 async def get_group_info(group_id: int, session: AsyncGameSession) -> Group:
-    """Получение информации о группе"""
-
+    """Получение информации о группе."""
     async with session.begin():
         group = await get_group(group_id, session)
         return group
