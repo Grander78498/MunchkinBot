@@ -1,6 +1,4 @@
-"""
-Часто используемые функции обращения к БД
-"""
+"""Часто используемые функции обращения к БД."""
 
 from fastapi import HTTPException
 from sqlmodel import select

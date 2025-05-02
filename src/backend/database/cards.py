@@ -1,6 +1,4 @@
-"""
-Таблицы для обращения к карточкам, включая подвиды.
-"""
+"""Таблицы для обращения к карточкам, включая подвиды."""
 
 from typing import TYPE_CHECKING, Optional
 
@@ -28,9 +26,7 @@ if TYPE_CHECKING:
 
 
 class ItemType(CustomSQLModel, table=True):
-    """
-    Тип шмотки - головняк, броник и т.п.
-    """
+    """Тип шмотки - головняк, броник и т.п."""
 
     id: int | None = Field(default=None, primary_key=True)
     item_type: str = Field(max_length=64)
@@ -39,9 +35,7 @@ class ItemType(CustomSQLModel, table=True):
 
 
 class ItemProperty(CustomSQLModel, table=True):
-    """
-    Свойство шмотки - обладает огненной атакой, является палкой или т.п.
-    """
+    """Свойство шмотки - обладает огненной атакой, является палкой или т.п."""
 
     id: int | None = Field(default=None, primary_key=True)
     item_property: str = Field(max_length=64)
@@ -50,9 +44,7 @@ class ItemProperty(CustomSQLModel, table=True):
 
 
 class MonsterType(CustomSQLModel, table=True):
-    """
-    Тип монстра - андед, дракон и т.п.
-    """
+    """Тип монстра - андед, дракон и т.п."""
 
     id: int | None = Field(default=None, primary_key=True)
     monster_type: str = Field(max_length=64)
@@ -61,9 +53,7 @@ class MonsterType(CustomSQLModel, table=True):
 
 
 class StatsType(CustomSQLModel, table=True):
-    """
-    Название характеристики манчикна - класс, раса, стиль и т.п.
-    """
+    """Название характеристики манчикна - класс, раса, стиль и т.п."""
 
     id: int | None = Field(default=None, primary_key=True)
     stats_type: str = Field(max_length=64)
@@ -72,9 +62,7 @@ class StatsType(CustomSQLModel, table=True):
 
 
 class CardBase(CustomSQLModel):
-    """
-    Базовый класс для карточки, нужен для реализации наследования.
-    """
+    """Базовый класс для карточки, нужен для реализации наследования."""
 
     name: str = Field(unique=True, max_length=64)
     image_path: str = Field(unique=True, max_length=64)
@@ -83,9 +71,7 @@ class CardBase(CustomSQLModel):
 
 
 class Card(CardBase, table=True):
-    """
-    Таблица карточки.
-    """
+    """Таблица карточки."""
 
     id: int | None = Field(default=None, primary_key=True)
 
@@ -99,9 +85,7 @@ class Card(CardBase, table=True):
 
 
 class GameCard(CustomSQLModel, table=True):
-    """
-    Карточка, которая находится в игре.
-    """
+    """Карточка, которая находится в игре."""
 
     id: int | None = Field(default=None, primary_key=True)
     card_id: int = Field(foreign_key="card.id")
@@ -125,9 +109,7 @@ class Treasure(CardBase):
     @field_validator("card_type", mode="after")
     @classmethod
     def check_treasure(cls, value: CardType) -> CardType:
-        """
-        Проверка, что не попытались создать дверь под видом сокровища.
-        """
+        """Проверка, что не попытались создать дверь под видом сокровища."""
         if value != CardType.TREASURE:
             raise ValueError("Попытка создать сокровище со значение card_type=door")
         return value
@@ -141,18 +123,14 @@ class Door(CardBase):
     @field_validator("card_type", mode="after")
     @classmethod
     def check_door(cls, value: CardType) -> CardType:
-        """
-        Проверка, что не попытались создать сокровище под видом двери.
-        """
+        """Проверка, что не попытались создать сокровище под видом двери."""
         if value != CardType.DOOR:
             raise ValueError("Попытка создать дверь со значение card_type=treasure")
         return value
 
 
 class MonsterBase(CustomSQLModel):
-    """
-    Базовый класс для монстра.
-    """
+    """Базовый класс для монстра."""
 
     level: int = Field(default=1, sa_type=SmallInteger)
     strength: int = Field(default=1, sa_type=SmallInteger)
@@ -166,9 +144,7 @@ class MonsterCreate(Door, MonsterBase):
 
 
 class Monster(MonsterBase, table=True):
-    """
-    Таблица монстра.
-    """
+    """Таблица монстра."""
 
     card_id: int = Field(foreign_key="card.id", primary_key=True)
 

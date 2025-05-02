@@ -1,6 +1,4 @@
-"""
-Статичные enum, которые преобразуются в postgresql enum type
-"""
+"""Статичные enum, которые преобразуются в postgresql enum type."""
 
 from enum import Enum
 
@@ -14,7 +12,7 @@ class Gender(str, Enum):
 
 
 class TurnType(str, Enum):
-    """Возможное состояние хода"""
+    """Возможное состояние хода."""
 
     KICK_DOOR = "kick_door"
     LOOK_TROUBLE = "look_trouble"

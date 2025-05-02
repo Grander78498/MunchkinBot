@@ -57,24 +57,18 @@ class Action(ActionBase, table=True):
 
 
 class StatsChangeBase(CustomSQLModel):
-    """
-    Изменение различных численных характеристик - уровня, боевой силы, бонуса на смывку.
-    """
+    """Изменение различных численных характеристик - уровня, боевой силы, бонуса на смывку."""
 
     amount: int = Field(default=1, sa_type=SmallInteger)
     positive: bool
 
 
 class StatsChangeCreate(ActionBase, StatsChangeBase):
-    """
-    Изменение различных численных характеристик - уровня, боевой силы, бонуса на смывку.
-    """
+    """Изменение различных численных характеристик - уровня, боевой силы, бонуса на смывку."""
 
 
 class StatsChange(StatsChangeBase, table=True):
-    """
-    (ТАБЛИЦА) Изменение различных численных характеристик - уровня, боевой силы, бонуса на смывку.
-    """
+    """(ТАБЛИЦА) Изменение численных характеристик - уровня, боевой силы, бонуса на смывку."""
 
     action_id: int = Field(primary_key=True, foreign_key="action.id")
 
@@ -89,15 +83,11 @@ class CreatureUpdateBase(CustomSQLModel):
 
 
 class CreatureUpdateCreate(ActionBase, CreatureUpdateBase):
-    """
-    Добавление или удаление манчкинов/монстров в бой/из боя.
-    """
+    """Добавление или удаление манчкинов/монстров в бой/из боя."""
 
 
 class CreatureUpdate(CreatureUpdateBase, table=True):
-    """
-    (ТАБЛИЦА) Добавление или удаление манчкинов/монстров в бой/из боя.
-    """
+    """(ТАБЛИЦА) Добавление или удаление манчкинов/монстров в бой/из боя."""
 
     action_id: int = Field(primary_key=True, foreign_key="action.id")
 
@@ -113,15 +103,11 @@ class CardsTransferBase(CustomSQLModel):
 
 
 class CardsTransferCreate(ActionBase, CardsTransferBase):
-    """
-    Получение или передача карт.
-    """
+    """Получение или передача карт."""
 
 
 class CardsTransfer(CardsTransferBase, table=True):
-    """
-    (ТАБЛИЦА) Получение или передача карт.
-    """
+    """(ТАБЛИЦА) Получение или передача карт."""
 
     action_id: int = Field(primary_key=True, foreign_key="action.id")
 

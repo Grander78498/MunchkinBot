@@ -21,6 +21,7 @@ class APIClient:
     """Класс обработки обращений к API."""
 
     def __init__(self, base_url: str):
+        """Класс обработки обращений к API."""
         self.base_url = base_url
 
     def _handle_request(

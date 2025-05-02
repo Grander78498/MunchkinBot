@@ -1,6 +1,4 @@
-"""
-Таблицы для хранения различных условий.
-"""
+"""Таблицы для хранения различных условий."""
 
 from typing import TYPE_CHECKING
 
@@ -42,7 +40,7 @@ class Condition(CustomSQLModel, table=True):
 
 
 class PossibleConditionValue(CustomSQLModel, table=True):
-    """Возможное значение, фигурирующее в условии"""
+    """Возможное значение, фигурирующее в условии."""
 
     id: int | None = Field(default=None, primary_key=True)
     field_id: int = Field(foreign_key="possibleconditionfield.id")
@@ -53,7 +51,7 @@ class PossibleConditionValue(CustomSQLModel, table=True):
 
 
 class PossibleConditionField(CustomSQLModel, table=True):
-    """Возможное поле, значение которого проверяется в условии"""
+    """Возможное поле, значение которого проверяется в условии."""
 
     id: int | None = Field(default=None, primary_key=True)
     type_id: int = Field(foreign_key="possibleconditiontype.id")
@@ -64,7 +62,7 @@ class PossibleConditionField(CustomSQLModel, table=True):
 
 
 class PossibleConditionType(CustomSQLModel, table=True):
-    """Возможный тип объекта, который проверяется в условии"""
+    """Возможный тип объекта, который проверяется в условии."""
 
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(max_length=64)

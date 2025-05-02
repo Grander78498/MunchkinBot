@@ -101,7 +101,7 @@ jobs:
 
   pylint:
     name: Format(PyLint)
-    needs: black
+    needs: static
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +114,9 @@ jobs:
 
   cyclic-test:
     name: Cyclic Dependencies
-    needs: pylint
+    needs:
+      - pylint
+      - black
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
