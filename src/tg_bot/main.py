@@ -44,7 +44,8 @@ def read_text(key: str, lang: Language) -> str:
     with open('docs.json', 'r', encoding='utf-8') as file:
         texts = json.load(file)
         return texts[key][lang]
-    
+
+print(current_path)
 load_dotenv(current_path.parent.parent.joinpath('.env'), override=True)
 
 logging.basicConfig(level=logging.INFO)

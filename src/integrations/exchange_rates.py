@@ -53,7 +53,3 @@ def get_active_currency_codes():
         })
     
     return currencies
-
-active_currencies = get_active_currency_codes()
-for curr in active_currencies:
-    print(f"{curr['char_code']}: {curr['cbr_code']} - {curr['name']}")
