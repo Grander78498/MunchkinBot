@@ -22,7 +22,7 @@ from backend.database.conditions import *
 from backend.database import CustomSQLModel
 
 current_dir = Path().absolute()
-load_dotenv(current_dir.parent.parent.joinpath('.env'))
+load_dotenv(current_dir.parent.parent.joinpath(".env"))
 
 config = context.config
 
@@ -44,7 +44,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    db_url = os.getenv('DB_URL')
+    db_url = os.getenv("DB_URL")
     context.configure(
         url=db_url,
         target_metadata=target_metadata,
@@ -69,7 +69,7 @@ async def run_async_migrations() -> None:
 
     """
 
-    connectable = create_async_engine(os.getenv('DB_URL'))
+    connectable = create_async_engine(os.getenv("DB_URL"))
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

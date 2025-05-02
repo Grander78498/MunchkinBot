@@ -4,7 +4,6 @@ import sys
 import asyncio
 from pathlib import Path
 
-
 working_dir = Path().absolute().parent
 
 for name in os.listdir(working_dir):
@@ -13,6 +12,5 @@ for name in os.listdir(working_dir):
 
 from tg_bot.main import main
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

@@ -2,6 +2,7 @@
 Главный файл для FastAPI сервера
 Управляет жизненным циклом приложения и роутерами
 """
+
 from typing import Any
 
 from fastapi import FastAPI
@@ -13,7 +14,7 @@ app.include_router(game.router)
 app.include_router(admin.router)
 
 
-@app.get('/')
+@app.get("/")
 async def main() -> Any:
     """Не смотрите сюда"""
-    return {'msg': 'Сосал?'}
+    return {"msg": "Сосал?"}

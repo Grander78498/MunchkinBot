@@ -19,14 +19,16 @@ from ..tg_bot.main import (
     cmd_get_exchange_rate,
     bird_with_eggs,
     read_text,
-    Language
+    Language,
 )
 
 
 @pytest.fixture(autouse=True)
 def patch_api_and_text(monkeypatch, tmp_path):
     # Мокируем API‑клиент
-    monkeypatch.setattr("tg_bot.main.api_client.save_user", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        "tg_bot.main.api_client.save_user", lambda *args, **kwargs: None
+    )
     # Мокируем get_exchange_rate
     monkeypatch.setattr("tg_bot.main.get_exchange_rate", lambda cur: 123.0)
     # Подменяем docs.json для read_text
@@ -35,10 +37,10 @@ def patch_api_and_text(monkeypatch, tmp_path):
         "help": {"ru": "H_RU"},
         "rules": {"ru": "R_RU"},
         "support": {"ru": "SUP_RU"},
-        "donate": {"ru": "D_RU"}
+        "donate": {"ru": "D_RU"},
     }
     fp = tmp_path / "docs.json"
-    fp.write_text(json:=__import__("json").dumps(data), encoding="utf-8")
+    fp.write_text(json := __import__("json").dumps(data), encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     yield
 
@@ -46,14 +48,18 @@ def patch_api_and_text(monkeypatch, tmp_path):
 def make_message(command: str, lang: Language = Language.RU):
     user = User(id=1, is_bot=False, first_name="U", username="u")
     chat = Chat(id=1, type="private")
-    return Message(message_id=1, date=None, chat=chat, from_user=user, text=f"/{command}")
+    return Message(
+        message_id=1, date=None, chat=chat, from_user=user, text=f"/{command}"
+    )
 
 
 def make_callback(data: str):
     user = User(id=1, is_bot=False, first_name="U", username="u")
     chat = Chat(id=1, type="private")
     msg = make_message("get_most_transparent_policies")
-    cb = CallbackQuery(id="x", from_user=user, chat_instance="ci", message=msg, data=data)
+    cb = CallbackQuery(
+        id="x", from_user=user, chat_instance="ci", message=msg, data=data
+    )
     return cb
 
 
@@ -85,10 +91,12 @@ async def test_rules():
 
 @pytest.mark.asyncio
 async def test_support_and_donate():
-    for cmd, expected in [("support","SUP_RU"),("donate","D_RU")]:
+    for cmd, expected in [("support", "SUP_RU"), ("donate", "D_RU")]:
         msg = make_message(cmd)
         msg.answer = AsyncMock()
-        await getattr(__import__("tg_bot.main", fromlist=[f"cmd_{cmd}"]), f"cmd_{cmd}")(msg)
+        await getattr(
+            __import__("tg_bot.main", fromlist=[f"cmd_{cmd}"]), f"cmd_{cmd}"
+        )(msg)
         assert msg.answer.call_args.args[0] == expected
 
 
@@ -102,7 +110,7 @@ async def test_world_keyboard():
     assert isinstance(kwargs.get("reply_markup"), InlineKeyboardMarkup)
 
 
-@pytest.mark.parametrize("code", ["tru","Ursula","XI","Bel","OAE","SGD"])
+@pytest.mark.parametrize("code", ["tru", "Ursula", "XI", "Bel", "OAE", "SGD"])
 @pytest.mark.asyncio
 async def test_transparent_policies(code):
     cb = make_callback(code)
