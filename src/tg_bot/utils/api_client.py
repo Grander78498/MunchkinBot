@@ -60,7 +60,7 @@ class APIClient:
     def save_user(
         self, tg_id: int, user_name: str | None, full_name: str
     ) -> Any:
-        """Сохранение юзера
+        """Сохранение юзера.
 
         Args:
             tg_id (int): tg_id

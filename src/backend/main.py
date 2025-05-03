@@ -17,5 +17,5 @@ app.include_router(admin.router)
 
 @app.get("/")
 async def main() -> Any:
-    """Не смотрите сюда"""
+    """Не смотрите сюда."""
     return {"msg": "Сосал?"}

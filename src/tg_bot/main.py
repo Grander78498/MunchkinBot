@@ -114,7 +114,7 @@ async def cmd_donate(message: Message) -> None:
 
 @dp.callback_query(F.data.in_(["trump", "Ursula", "XI", "Bel", "OAE", "SGD"]))
 async def transparent_policies(call: CallbackQuery) -> None:
-    """Получение САМЫХ актуальных политик"""
+    """Получение САМЫХ актуальных политик."""
     if call.message is None:
         await call.answer('Произошла ошибка при отправке курса')
         return
