@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any, AsyncGenerator, Annotated
 
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    create_async_engine,
+    async_sessionmaker,
+)
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel, Relationship
 from fastapi import Depends
@@ -50,7 +54,9 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 def lazy_relationship(*args, **kwargs) -> Any:  # type: ignore [no-untyped-def]
     """Relationship, который легче использовать в асинхронных запросах."""
-    return Relationship(*args, sa_relationship_kwargs={"lazy": "selectin"}, **kwargs)
+    return Relationship(
+        *args, sa_relationship_kwargs={"lazy": "selectin"}, **kwargs
+    )
 
 
 AsyncGameSession = Annotated[AsyncSession, Depends(get_session)]

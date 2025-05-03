@@ -31,7 +31,7 @@ class APIClient:
         path_params: dict[str, Any] | None = None,
         body: dict[str, Any] | None = None,
     ) -> Any:
-        """Отправка запроса с заданными параметрами
+        """Отправка запроса с заданными параметрами.
 
         Args:
             method (Method): Используемый HTTP метод

@@ -74,7 +74,9 @@ class CardAction(CustomSQLModel, table=True):
     action_id: int | None = Field(
         default=None, primary_key=True, foreign_key="action.id"
     )
-    card_id: int | None = Field(default=None, primary_key=True, foreign_key="card.id")
+    card_id: int | None = Field(
+        default=None, primary_key=True, foreign_key="card.id"
+    )
 
 
 class ActionCondition(CustomSQLModel, table=True):

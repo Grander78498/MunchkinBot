@@ -12,3 +12,5 @@ cards
 # Virtual environments
 .venv
 .env
+
+.coverage

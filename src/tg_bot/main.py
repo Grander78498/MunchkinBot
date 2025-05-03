@@ -30,16 +30,16 @@ try:
     from custom_exceptions.general import EnvException
     from integrations import get_exchange_rate, Currencies
 except ImportError as e:
-    raise ImportError('Ошибка при импорте внутренних модулей') from e
+    raise ImportError("Ошибка при импорте внутренних модулей") from e
 
 
 class Language(str, Enum):
     """Доступные языки"""
 
-    RU = 'ru'
-    EN = 'en'
-    SLAVIC = 'slavic'
-    CHINA = 'china'
+    RU = "ru"
+    EN = "en"
+    SLAVIC = "slavic"
+    CHINA = "china"
 
 
 def read_text(key: str, lang: Language) -> str:
@@ -90,10 +90,12 @@ async def cmd_rules(message: Message) -> None:
     # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     builder = InlineKeyboardBuilder()
     builder.button(
-        text='Оригинальные правила',
-        url='https://hobbygames.ru/download/rules/m_color_rules.pdf')
-    await message.answer(read_text("rules", Language.RU),
-                         reply_markup=builder.as_markup())
+        text="Оригинальные правила",
+        url="https://hobbygames.ru/download/rules/m_color_rules.pdf",
+    )
+    await message.answer(
+        read_text("rules", Language.RU), reply_markup=builder.as_markup()
+    )
 
 
 @dp.message(Command("support"))
@@ -110,28 +112,31 @@ async def cmd_donate(message: Message) -> None:
     await message.answer(read_text("donate", Language.RU))
 
 
-@dp.callback_query(F.data.in_(['tru', 'Ursula', 'XI', 'Bel', 'OAE', 'SGD']))
+@dp.callback_query(F.data.in_(["tru", "Ursula", "XI", "Bel", "OAE", "SGD"]))
 async def transparent_policies(call: CallbackQuery):
     """Получение САМЫХ актуальных политик"""
     match call.data:
-        case 'tru':
+        case "tru":
             await call.message.reply(
-                f"Курс доллара равен {get_exchange_rate(Currencies.USD)} ₽")
-        case 'Ursula':
+                f"Курс доллара равен {get_exchange_rate(Currencies.USD)} ₽"
+            )
+        case "Ursula":
             await call.message.reply(
-                f"Курс евро равен {get_exchange_rate(Currencies.EUR)} ₽")
-        case 'XI':
+                f"Курс евро равен {get_exchange_rate(Currencies.EUR)} ₽"
+            )
+        case "XI":
             await call.message.reply(
-                f"Курс юаня равен {get_exchange_rate(Currencies.CNY)} ₽")
-        case 'Bel':
+                f"Курс юаня равен {get_exchange_rate(Currencies.CNY)} ₽"
+            )
+        case "Bel":
             await call.message.reply(
                 f"Курс белорусского рубля равен {get_exchange_rate(Currencies.BYN)} ₽"
             )
-        case 'OAE':
+        case "OAE":
             await call.message.reply(
                 f"Курс дирхама ОАЭ равен {get_exchange_rate(Currencies.AED)} ₽"
             )
-        case 'SGD':
+        case "SGD":
             await call.message.reply(
                 f"Курс сингапурского доллара равен {get_exchange_rate(Currencies.SGD)} ₽"
             )
@@ -149,8 +154,9 @@ async def cmd_world(message: Message) -> None:
     builder.button(text="Дирхам ОАЭ", callback_data="OAE")
     builder.button(text="Сингапур", callback_data="SGD")
     builder.adjust(2)
-    await message.answer("Выбери СВОего героя",
-                         reply_markup=builder.as_markup())
+    await message.answer(
+        "Выбери СВОего героя", reply_markup=builder.as_markup()
+    )
 
 
 @dp.message(Command("get_daniel_trumps_most_transparent_policies"))
@@ -165,8 +171,8 @@ async def bird_with_eggs(message: Message) -> None:
     """Команда для повышения мотивации"""
     await message.answer_photo(
         caption="Яйца с птицей",
-        photo=
-        "https://cs15.pikabu.ru/post_img/2024/12/29/4/1735451132180917891.jpg")
+        photo="https://cs15.pikabu.ru/post_img/2024/12/29/4/1735451132180917891.jpg",
+    )
 
 
 async def main() -> None:
@@ -178,4 +184,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print('Завершение работы бота')
+        print("Завершение работы бота")

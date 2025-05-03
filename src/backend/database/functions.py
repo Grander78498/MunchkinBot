@@ -61,5 +61,7 @@ async def get_game(game_id: int, session: AsyncSession) -> Game:
     result = await session.execute(select(Game).where(Game.id == game_id))
     game = result.scalar()
     if game is None:
-        raise HTTPException(status_code=404, detail="Игры с таким id не существует")
+        raise HTTPException(
+            status_code=404, detail="Игры с таким id не существует"
+        )
     return game

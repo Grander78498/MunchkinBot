@@ -2,7 +2,6 @@
 Получение курсов валют
 """
 
-
 from enum import Enum
 
 import requests
@@ -17,12 +16,12 @@ headers = {
 class Currencies(str, Enum):
     """Доступные курсы валют"""
 
-    CNY = 'R01375'
-    USD = 'R01235'
-    EUR = 'R01239'
-    BYN = 'R01090B'
-    AED = 'R01230'
-    SGD = 'R01625'
+    CNY = "R01375"
+    USD = "R01235"
+    EUR = "R01239"
+    BYN = "R01090B"
+    AED = "R01230"
+    SGD = "R01625"
 
 
 def get_exchange_rate(currency: Currencies) -> float:
@@ -32,10 +31,12 @@ def get_exchange_rate(currency: Currencies) -> float:
     :param currency: Валюта из перечисления Currencies
     :return: Текущий курс валюты
     """
-    url = 'https://cbr.ru/cursonweek'
-    params = {'DT': '', 'val_id': currency.value}
-    response = requests.get(url, headers=headers, params=params, timeout=10).json()[0]
-    return float(response['curs'])
+    url = "https://cbr.ru/cursonweek"
+    params = {"DT": "", "val_id": currency.value}
+    response = requests.get(
+        url, headers=headers, params=params, timeout=10
+    ).json()[0]
+    return float(response["curs"])
 
 
 # def get_active_currency_codes() -> list[dict[str, Any]]:

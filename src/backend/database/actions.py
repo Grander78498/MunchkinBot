@@ -34,7 +34,9 @@ class Action(ActionBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
 
-    stats_change: Optional["StatsChange"] = lazy_relationship(back_populates="action")
+    stats_change: Optional["StatsChange"] = lazy_relationship(
+        back_populates="action"
+    )
     creature_update: Optional["CreatureUpdate"] = lazy_relationship(
         back_populates="action"
     )

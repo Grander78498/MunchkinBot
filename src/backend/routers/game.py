@@ -25,7 +25,9 @@ async def create_game(group_id: int, session: AsyncGameSession) -> Game:
 
 
 @router.get("/munchkin")
-async def get_user_munchkins(user_id: int, session: AsyncGameSession) -> list[Munchkin]:
+async def get_user_munchkins(
+    user_id: int, session: AsyncGameSession
+) -> list[Munchkin]:
     """Получение манчкинов, созданных пользователем."""
     async with session.begin():
         user = await get_user(user_id, session)
@@ -46,14 +48,17 @@ async def create_munchkin(
             session.add(munchkin)
     except IntegrityError as e:
         raise HTTPException(
-            status_code=404, detail="Пользователь уже есть в данной игровой партии"
+            status_code=404,
+            detail="Пользователь уже есть в данной игровой партии",
         ) from e
 
     return munchkin
 
 
 @router.get("/{game_id}/munchkin")
-async def get_game_munchkins(game_id: int, session: AsyncGameSession) -> list[Munchkin]:
+async def get_game_munchkins(
+    game_id: int, session: AsyncGameSession
+) -> list[Munchkin]:
     """Получение манкчинов в игре."""
     async with session.begin():
         game = await get_game(game_id, session)

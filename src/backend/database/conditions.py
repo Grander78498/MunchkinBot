@@ -27,7 +27,9 @@ class Condition(CustomSQLModel, table=True):
         sa_type=ENUM(EqualType)
     )  # type: ignore [call-overload]
 
-    value: "PossibleConditionValue" = lazy_relationship(back_populates="conditions")
+    value: "PossibleConditionValue" = lazy_relationship(
+        back_populates="conditions"
+    )
     actions: list["Action"] = lazy_relationship(
         back_populates="conditions", link_model=ActionCondition
     )
@@ -58,7 +60,9 @@ class PossibleConditionField(CustomSQLModel, table=True):
     name: str = Field(max_length=64)
 
     type: "PossibleConditionType" = lazy_relationship(back_populates="fields")
-    values: list[PossibleConditionValue] = lazy_relationship(back_populates="field")
+    values: list[PossibleConditionValue] = lazy_relationship(
+        back_populates="field"
+    )
 
 
 class PossibleConditionType(CustomSQLModel, table=True):
@@ -67,4 +71,6 @@ class PossibleConditionType(CustomSQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(max_length=64)
 
-    fields: list[PossibleConditionField] = lazy_relationship(back_populates="type")
+    fields: list[PossibleConditionField] = lazy_relationship(
+        back_populates="type"
+    )

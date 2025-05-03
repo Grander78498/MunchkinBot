@@ -111,7 +111,9 @@ class Treasure(CardBase):
     def check_treasure(cls, value: CardType) -> CardType:
         """Проверка, что не попытались создать дверь под видом сокровища."""
         if value != CardType.TREASURE:
-            raise ValueError("Попытка создать сокровище со значение card_type=door")
+            raise ValueError(
+                "Попытка создать сокровище со значение card_type=door"
+            )
         return value
 
 
@@ -125,7 +127,9 @@ class Door(CardBase):
     def check_door(cls, value: CardType) -> CardType:
         """Проверка, что не попытались создать сокровище под видом двери."""
         if value != CardType.DOOR:
-            raise ValueError("Попытка создать дверь со значение card_type=treasure")
+            raise ValueError(
+                "Попытка создать дверь со значение card_type=treasure"
+            )
         return value
 
 
@@ -136,7 +140,9 @@ class MonsterBase(CustomSQLModel):
     strength: int = Field(default=1, sa_type=SmallInteger)
     treasure_count: int
     reward_level_count: int
-    monster_type_id: int | None = Field(default=None, foreign_key="monstertype.id")
+    monster_type_id: int | None = Field(
+        default=None, foreign_key="monstertype.id"
+    )
 
 
 class MonsterCreate(Door, MonsterBase):
@@ -152,7 +158,9 @@ class Monster(MonsterBase, table=True):
     combats: list["Combat"] = lazy_relationship(
         back_populates="monsters", link_model=MonsterCombat
     )
-    monster_type: MonsterType | None = lazy_relationship(back_populates="monsters")
+    monster_type: MonsterType | None = lazy_relationship(
+        back_populates="monsters"
+    )
     actions: list["Action"] = lazy_relationship(
         back_populates="monsters", link_model=ActionMonster
     )
@@ -190,7 +198,9 @@ class ItemBase(CustomSQLModel):
     is_hireling: bool
     price: int | None = Field(default=None, sa_type=SmallInteger)
     item_type_id: int | None = Field(default=None, foreign_key="itemtype.id")
-    item_property_id: int | None = Field(default=None, foreign_key="itemproperty.id")
+    item_property_id: int | None = Field(
+        default=None, foreign_key="itemproperty.id"
+    )
 
     hand_count: int | None = Field(default=None, sa_type=SmallInteger)
 
@@ -205,9 +215,13 @@ class Item(ItemBase, table=True):
     card_id: int = Field(foreign_key="card.id", primary_key=True)
 
     card: Card = lazy_relationship(back_populates="item")
-    game_items: list["GameItem"] = lazy_relationship(back_populates="original_item")
+    game_items: list["GameItem"] = lazy_relationship(
+        back_populates="original_item"
+    )
     item_type: ItemType | None = lazy_relationship(back_populates="items")
-    item_property: ItemProperty | None = lazy_relationship(back_populates="items")
+    item_property: ItemProperty | None = lazy_relationship(
+        back_populates="items"
+    )
 
     conditions: list["Condition"] = lazy_relationship(
         back_populates="items", link_model=ItemCondition

@@ -37,7 +37,9 @@ def upgrade() -> None:
         "itemproperty",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column(
-            "item_property", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+            "item_property",
+            sqlmodel.sql.sqltypes.AutoString(length=64),
+            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_itemproperty")),
     )
@@ -45,7 +47,9 @@ def upgrade() -> None:
         "itemtype",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column(
-            "item_type", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+            "item_type",
+            sqlmodel.sql.sqltypes.AutoString(length=64),
+            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_itemtype")),
     )
@@ -53,7 +57,9 @@ def upgrade() -> None:
         "monstertype",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column(
-            "monster_type", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+            "monster_type",
+            sqlmodel.sql.sqltypes.AutoString(length=64),
+            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_monstertype")),
     )
@@ -61,7 +67,9 @@ def upgrade() -> None:
         "statstype",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column(
-            "stats_type", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+            "stats_type",
+            sqlmodel.sql.sqltypes.AutoString(length=64),
+            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_statstype")),
     )
@@ -91,7 +99,9 @@ def upgrade() -> None:
         sa.Column("treasure_count", sa.SmallInteger(), nullable=False),
         sa.Column("reward_level_count", sa.SmallInteger(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["combat_id"], ["combat.id"], name=op.f("fk_monstercombat_combat_id_combat")
+            ["combat_id"],
+            ["combat.id"],
+            name=op.f("fk_monstercombat_combat_id_combat"),
         ),
         sa.ForeignKeyConstraint(
             ["monster_id"],
@@ -120,7 +130,9 @@ def upgrade() -> None:
             "munchkin_id", "stats_id", name=op.f("pk_munchkinstats")
         ),
     )
-    op.add_column("gameitem", sa.Column("item_type_id", sa.Integer(), nullable=True))
+    op.add_column(
+        "gameitem", sa.Column("item_type_id", sa.Integer(), nullable=True)
+    )
     op.add_column(
         "gameitem", sa.Column("item_property_id", sa.Integer(), nullable=True)
     )
@@ -138,7 +150,9 @@ def upgrade() -> None:
         ["item_type_id"],
         ["id"],
     )
-    op.add_column("item", sa.Column("item_property_id", sa.Integer(), nullable=True))
+    op.add_column(
+        "item", sa.Column("item_property_id", sa.Integer(), nullable=True)
+    )
     op.create_foreign_key(
         op.f("fk_item_item_property_id_itemproperty"),
         "item",
@@ -146,7 +160,9 @@ def upgrade() -> None:
         ["item_property_id"],
         ["id"],
     )
-    op.add_column("monster", sa.Column("monster_type_id", sa.Integer(), nullable=True))
+    op.add_column(
+        "monster", sa.Column("monster_type_id", sa.Integer(), nullable=True)
+    )
     op.create_foreign_key(
         op.f("fk_monster_monster_type_id_monstertype"),
         "monster",
@@ -164,7 +180,9 @@ def downgrade() -> None:
     sa.Enum("HEADGEAR", "ARMOR", "FOOTGEAR", "HAND", name="itemtype").create(
         op.get_bind()
     )
-    sa.Enum("FLAME", "WOODEN", "STICK", name="itemproperty").create(op.get_bind())
+    sa.Enum("FLAME", "WOODEN", "STICK", name="itemproperty").create(
+        op.get_bind()
+    )
     op.add_column(
         "monster",
         sa.Column(
@@ -175,7 +193,9 @@ def downgrade() -> None:
         ),
     )
     op.drop_constraint(
-        op.f("fk_monster_monster_type_id_monstertype"), "monster", type_="foreignkey"
+        op.f("fk_monster_monster_type_id_monstertype"),
+        "monster",
+        type_="foreignkey",
     )
     op.drop_column("monster", "monster_type_id")
     op.add_column(
@@ -199,14 +219,20 @@ def downgrade() -> None:
         sa.Column(
             "item_property",
             postgresql.ENUM(
-                "FLAME", "WOODEN", "STICK", name="itemproperty", create_type=False
+                "FLAME",
+                "WOODEN",
+                "STICK",
+                name="itemproperty",
+                create_type=False,
             ),
             autoincrement=False,
             nullable=True,
         ),
     )
     op.drop_constraint(
-        op.f("fk_item_item_property_id_itemproperty"), "item", type_="foreignkey"
+        op.f("fk_item_item_property_id_itemproperty"),
+        "item",
+        type_="foreignkey",
     )
     op.drop_column("item", "item_property_id")
     op.add_column(
@@ -230,14 +256,20 @@ def downgrade() -> None:
         sa.Column(
             "item_property",
             postgresql.ENUM(
-                "FLAME", "WOODEN", "STICK", name="itemproperty", create_type=False
+                "FLAME",
+                "WOODEN",
+                "STICK",
+                name="itemproperty",
+                create_type=False,
             ),
             autoincrement=False,
             nullable=True,
         ),
     )
     op.drop_constraint(
-        op.f("fk_gameitem_item_type_id_itemtype"), "gameitem", type_="foreignkey"
+        op.f("fk_gameitem_item_type_id_itemtype"),
+        "gameitem",
+        type_="foreignkey",
     )
     op.drop_constraint(
         op.f("fk_gameitem_item_property_id_itemproperty"),

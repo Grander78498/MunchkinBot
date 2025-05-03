@@ -27,7 +27,9 @@ def upgrade() -> None:
         sa.Column("action_id", sa.Integer(), nullable=False),
         sa.Column("monster_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["action_id"], ["action.id"], name=op.f("fk_actionmonster_action_id_action")
+            ["action_id"],
+            ["action.id"],
+            name=op.f("fk_actionmonster_action_id_action"),
         ),
         sa.ForeignKeyConstraint(
             ["monster_id"],

@@ -34,16 +34,24 @@ def upgrade() -> None:
     ).create(op.get_bind())
     op.create_table(
         "gamecard",
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False),
         sa.Column(
-            "image_path", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+            "name", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
         ),
-        sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "image_path",
+            sqlmodel.sql.sqltypes.AutoString(length=64),
+            nullable=False,
+        ),
+        sa.Column(
+            "description", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("card_id", sa.Integer(), nullable=False),
         sa.Column(
             "card_type",
-            postgresql.ENUM("DOOR", "TREASURE", name="cardtype", create_type=False),
+            postgresql.ENUM(
+                "DOOR", "TREASURE", name="cardtype", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column(
@@ -69,13 +77,19 @@ def upgrade() -> None:
     )
     op.create_table(
         "gameitem",
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False),
         sa.Column(
-            "image_path", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+            "name", sqlmodel.sql.sqltypes.AutoString(length=64), nullable=False
+        ),
+        sa.Column(
+            "image_path",
+            sqlmodel.sql.sqltypes.AutoString(length=64),
+            nullable=False,
         ),
         sa.Column(
             "card_type",
-            postgresql.ENUM("DOOR", "TREASURE", name="cardtype", create_type=False),
+            postgresql.ENUM(
+                "DOOR", "TREASURE", name="cardtype", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column("runaway_bonus", sa.Integer(), nullable=True),
@@ -101,7 +115,11 @@ def upgrade() -> None:
         sa.Column(
             "item_property",
             postgresql.ENUM(
-                "FLAME", "WOODEN", "STICK", name="itemproperty", create_type=False
+                "FLAME",
+                "WOODEN",
+                "STICK",
+                name="itemproperty",
+                create_type=False,
             ),
             nullable=True,
         ),
@@ -119,7 +137,9 @@ def upgrade() -> None:
             name=op.f("fk_gameitem_original_item_id_item"),
         ),
         sa.PrimaryKeyConstraint("game_card_id", name=op.f("pk_gameitem")),
-        sa.UniqueConstraint("description", name=op.f("uq_gameitem_description")),
+        sa.UniqueConstraint(
+            "description", name=op.f("uq_gameitem_description")
+        ),
         sa.UniqueConstraint("image_path", name=op.f("uq_gameitem_image_path")),
         sa.UniqueConstraint("name", name=op.f("uq_gameitem_name")),
     )
@@ -129,14 +149,18 @@ def upgrade() -> None:
         sa.Column("card_id", sa.Integer(), nullable=False),
         sa.Column("in_game", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["card_id"], ["gamecard.id"], name=op.f("fk_munchkincard_card_id_gamecard")
+            ["card_id"],
+            ["gamecard.id"],
+            name=op.f("fk_munchkincard_card_id_gamecard"),
         ),
         sa.ForeignKeyConstraint(
             ["munchkin_id"],
             ["munchkin.id"],
             name=op.f("fk_munchkincard_munchkin_id_munchkin"),
         ),
-        sa.PrimaryKeyConstraint("munchkin_id", "card_id", name=op.f("pk_munchkincard")),
+        sa.PrimaryKeyConstraint(
+            "munchkin_id", "card_id", name=op.f("pk_munchkincard")
+        ),
     )
     op.create_table(
         "munchkinitem",
@@ -153,19 +177,27 @@ def upgrade() -> None:
             ["munchkin.id"],
             name=op.f("fk_munchkinitem_munchkin_id_munchkin"),
         ),
-        sa.PrimaryKeyConstraint("munchkin_id", "item_id", name=op.f("pk_munchkinitem")),
+        sa.PrimaryKeyConstraint(
+            "munchkin_id", "item_id", name=op.f("pk_munchkinitem")
+        ),
     )
-    op.add_column("item", sa.Column("hand_count", sa.SmallInteger(), nullable=True))
+    op.add_column(
+        "item", sa.Column("hand_count", sa.SmallInteger(), nullable=True)
+    )
     op.sync_enum_values(
         enum_schema="public",
         enum_name="itemtype",
         new_values=["HEADGEAR", "ARMOR", "FOOTGEAR", "HAND"],
         affected_columns=[
             TableReference(
-                table_schema="public", table_name="gameitem", column_name="item_type"
+                table_schema="public",
+                table_name="gameitem",
+                column_name="item_type",
             ),
             TableReference(
-                table_schema="public", table_name="item", column_name="item_type"
+                table_schema="public",
+                table_name="item",
+                column_name="item_type",
             ),
         ],
         enum_values_to_rename=[],
@@ -190,10 +222,14 @@ def downgrade() -> None:
         ],
         affected_columns=[
             TableReference(
-                table_schema="public", table_name="gameitem", column_name="item_type"
+                table_schema="public",
+                table_name="gameitem",
+                column_name="item_type",
             ),
             TableReference(
-                table_schema="public", table_name="item", column_name="item_type"
+                table_schema="public",
+                table_name="item",
+                column_name="item_type",
             ),
         ],
         enum_values_to_rename=[],
