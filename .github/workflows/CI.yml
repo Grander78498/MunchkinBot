@@ -15,6 +15,7 @@ jobs:
   coverage:
     name: Coverage
     needs: install-project
+    environment: TEST_BOT
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup-env  # Локальный action
       - name: Run tests and show coverage
         env:
-          BOT_TOKEN: ${{ secrets.TEST_BOT }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if ls src/tests/test_*.py 1> /dev/null 2>&1; then
             uv run coverage run -m pytest
@@ -60,6 +61,7 @@ jobs:
   mutation:
     name: Mutation
     needs: coverage
+    environment: TEST_BOT
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,6 +69,8 @@ jobs:
         uses: ./.github/actions/setup-env  # Локальный action
 
       - name: Run mutation tests
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if ls src/tests/test_*.py 1> /dev/null 2>&1; then
             uv run mutmut run --paths-to-mutate=$(git ls-files '*.py')
