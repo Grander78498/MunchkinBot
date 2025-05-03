@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""Cards and items
+"""Cards and items.
 
 Revision ID: 4c77dd162bbb
 Revises: c19bfe0dbfab

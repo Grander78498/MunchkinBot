@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""Munchkin_cards_updaTE
+"""Munchkin_cards_updaTE.
 
 Revision ID: 10d47fda113c
 Revises: a443e19ad380

@@ -38,6 +38,7 @@ dev = [
     "radon>=6.0.1",
     "types-requests>=2.32.0.20250328",
     "yapf>=0.43.0",
+    "mutmut>=3.2.3",
 ]
 
 [tool.mypy]

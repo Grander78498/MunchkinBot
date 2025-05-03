@@ -56,7 +56,7 @@ jobs:
 
       - name: Docstrings analysis
         run: |
-          uv run pydocstyle $(git ls-files '*.py' | grep -v '^src/backend/migrations/' | grep -v '__init__')
+          uv run pydocstyle $(git ls-files '*.py')
 
   mutation:
     name: Mutation

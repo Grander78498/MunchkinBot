@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""Final
+"""Final.
 
 Revision ID: dd6c994e59e5
 Revises: 10d47fda113c

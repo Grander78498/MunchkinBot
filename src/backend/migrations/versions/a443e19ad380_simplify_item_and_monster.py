@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""Simplify item and monster
+"""Simplify item and monster.
 
 Revision ID: a443e19ad380
 Revises: e136fc120501

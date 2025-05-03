@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""On progress
+"""On progress.
 
 Revision ID: c19bfe0dbfab
 Revises: 6bdf256496c6

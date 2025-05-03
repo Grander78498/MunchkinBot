@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""fix1
+"""fix1.
 
 Revision ID: e136fc120501
 Revises: ae56d122db5d

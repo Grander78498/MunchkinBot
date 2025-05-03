@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""Munchkin
+"""Munchkin.
 
 Revision ID: 6bdf256496c6
 Revises: 284bdc00f806

@@ -116,7 +116,7 @@ async def cmd_donate(message: Message) -> None:
 async def transparent_policies(call: CallbackQuery) -> None:
     """Получение САМЫХ актуальных политик."""
     if call.message is None:
-        await call.answer('Произошла ошибка при отправке курса')
+        await call.answer("Произошла ошибка при отправке курса")
         return
     match call.data:
         case "trump":

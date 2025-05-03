@@ -1,4 +1,5 @@
 # pylint: skip-file
+"""Настройка миграций."""
 import asyncio
 import os
 from pathlib import Path
@@ -57,6 +58,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    """Run migrations."""
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
@@ -64,11 +66,11 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
+    """Run async migrations.
+
+    In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
-
     connectable = create_async_engine(os.getenv("DB_URL"))
 
     async with connectable.connect() as connection:

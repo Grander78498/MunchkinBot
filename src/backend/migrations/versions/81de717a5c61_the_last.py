@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""The last
+"""The last.
 
 Revision ID: 81de717a5c61
 Revises: dd6c994e59e5

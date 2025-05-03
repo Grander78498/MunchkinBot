@@ -1,5 +1,5 @@
 # pylint: skip-file
-"""fix field name
+"""fix field name.
 
 Revision ID: ae56d122db5d
 Revises: 4c77dd162bbb
