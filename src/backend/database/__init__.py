@@ -14,7 +14,7 @@ from sqlalchemy import MetaData
 from sqlmodel import SQLModel, Relationship
 from fastapi import Depends
 
-from custom_exceptions import EnvException
+from custom_exceptions.general import EnvException
 
 
 class CustomSQLModel(SQLModel):
