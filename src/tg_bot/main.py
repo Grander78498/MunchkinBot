@@ -50,7 +50,7 @@ def read_text(key: str, lang: Language) -> str:
         lang (str) - язык пользователя
     """
     with open("docs.json", "r", encoding="utf-8") as file:
-        texts = json.load(file)
+        texts: dict[str, dict[str, str]] = json.load(file)
         return texts[key][lang]
 
 
@@ -80,7 +80,7 @@ async def cmd_start(message: Message) -> None:
 @dp.message(Command("help"))
 async def cmd_help(message: Message) -> None:
     """Обработка команды help"""
-    # TODO: Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
+    # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     await message.answer(read_text("help", Language.RU))
 
 
@@ -112,11 +112,14 @@ async def cmd_donate(message: Message) -> None:
     await message.answer(read_text("donate", Language.RU))
 
 
-@dp.callback_query(F.data.in_(["tru", "Ursula", "XI", "Bel", "OAE", "SGD"]))
-async def transparent_policies(call: CallbackQuery):
+@dp.callback_query(F.data.in_(["trump", "Ursula", "XI", "Bel", "OAE", "SGD"]))
+async def transparent_policies(call: CallbackQuery) -> None:
     """Получение САМЫХ актуальных политик"""
+    if call.message is None:
+        await call.answer('Произошла ошибка при отправке курса')
+        return
     match call.data:
-        case "tru":
+        case "trump":
             await call.message.reply(
                 f"Курс доллара равен {get_exchange_rate(Currencies.USD)} ₽"
             )
@@ -147,7 +150,7 @@ async def transparent_policies(call: CallbackQuery):
 async def cmd_world(message: Message) -> None:
     """Выдача актуальных валют"""
     builder = InlineKeyboardBuilder()
-    builder.button(text="Трамп", callback_data="tru")
+    builder.button(text="Трамп", callback_data="trump")
     builder.button(text="Евро", callback_data="Ursula")
     builder.button(text="Нефритовый стержень", callback_data="XI")
     builder.button(text="Бульба", callback_data="Bel")
