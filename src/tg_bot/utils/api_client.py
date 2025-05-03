@@ -31,7 +31,7 @@ class APIClient:
         path_params: dict[str, Any] | None = None,
         body: dict[str, Any] | None = None,
     ) -> Any:
-        """Отправка запроса с заданными параметрами.
+        """Отправка запроса с заданными параметрами
 
         Args:
             method (Method): Используемый HTTP метод
@@ -45,18 +45,22 @@ class APIClient:
         Returns:
             dict[str, Any]: Ответ от сервера.
         """
-        response = requests.request(
-            method=method,
-            url=self.base_url + url,
-            params=json.dumps(path_params),
-            data=json.dumps(body),
-            timeout=1,
-        )
-        return response.json()
+        try:
+            response = requests.request(
+                method=method,
+                url=self.base_url + url,
+                params=json.dumps(path_params),
+                data=json.dumps(body),
+                timeout=1,
+            )
+            return {"ok": True, **response.json()}
+        except requests.exceptions.ConnectTimeout:
+            return {"ok": False, "msg": "API error"}
 
-    def save_user(self, tg_id: int, user_name: str | None, full_name: str) -> Any:
-        """
-        Сохранение юзера.
+    def save_user(
+        self, tg_id: int, user_name: str | None, full_name: str
+    ) -> Any:
+        """Сохранение юзера
 
         Args:
             tg_id (int): tg_id
@@ -69,7 +73,11 @@ class APIClient:
         result = self._handle_request(
             Method.POST,
             "/user",
-            body={"tg_id": tg_id, "user_name": user_name, "full_name": full_name},
+            body={
+                "tg_id": tg_id,
+                "user_name": user_name,
+                "full_name": full_name,
+            },
         )
         return result
 
