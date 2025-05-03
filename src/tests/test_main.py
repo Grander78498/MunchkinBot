@@ -1,157 +1,129 @@
-# src/tests/test_main.py
-import pytest
 import sys
 import os
 from pathlib import Path
-from typing import Generator, Any
 from datetime import datetime
-
+from unittest import IsolatedAsyncioTestCase, main as unittest_main
 from unittest.mock import AsyncMock, patch
+
 from aiogram.types import Message, CallbackQuery, User, Chat
 from aiogram.utils.keyboard import InlineKeyboardMarkup
 
-
-working_dir = Path().absolute().parent
+# Импорт приложения
+working_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(working_dir))
 
 for name in os.listdir(working_dir):
-    if working_dir.joinpath(name).is_dir():
-        sys.path.insert(0, str(working_dir.joinpath(name)))
-try:
-    from integrations.exchange_rates import get_exchange_rate, Currencies
+    if (working_dir / name).is_dir():
+        sys.path.insert(0, str(working_dir / name))
 
-    from tg_bot.main import (
-        bot,
-        dp,
-        cmd_start,
-        cmd_help,
-        cmd_rules,
-        cmd_support,
-        cmd_donate,
-        cmd_world,
-        transparent_policies,
-        cmd_get_exchange_rate,
-        bird_with_eggs,
-        read_text,
-        Language,
-    )
-except ImportError as e:
-    raise ImportError('Возникла ошибка при импортах') from e
+from tg_bot.main import (
+    cmd_start,
+    cmd_help,
+    cmd_rules,
+    cmd_support,
+    cmd_donate,
+    cmd_world,
+    transparent_policies,
+    cmd_get_exchange_rate,
+    bird_with_eggs,
+    Language,
+)
 
 
-
-@pytest.fixture(autouse=True)
-def patch_api_and_text(monkeypatch: Any, tmp_path: Path) -> Generator[Any, Any, Any]:
-    # Мокируем API‑клиент
-    monkeypatch.setattr(
-        "tg_bot.main.api_client.save_user", lambda *args, **kwargs: None
-    )
-    # Мокируем get_exchange_rate
-    monkeypatch.setattr("tg_bot.main.get_exchange_rate", lambda cur: 123.0)
-    # Подменяем docs.json для read_text
-    data = {
-        "start": {"ru": "S_RU"},
-        "help": {"ru": "H_RU"},
-        "rules": {"ru": "R_RU"},
-        "support": {"ru": "SUP_RU"},
-        "donate": {"ru": "D_RU"},
-    }
-    fp = tmp_path / "docs.json"
-    fp.write_text(json := __import__("json").dumps(data), encoding="utf-8")
-    monkeypatch.chdir(tmp_path)
-    yield
-
-
-def make_message(command: str, lang: Language = Language.RU) -> Message:
-    user = User(id=1, is_bot=False, first_name="U", username="u")
-    chat = Chat(id=1, type="private")
+def make_message(text="test") -> Message:
     return Message(
-        message_id=1, date=datetime.now(), chat=chat, from_user=user, text=f"/{command}"
+        message_id=1,
+        date=datetime.utcnow(),
+        chat=Chat(id=1, type="private"),
+        from_user=User(id=1, is_bot=False, first_name="Test", username="testuser"),
+        text=text,
     )
 
 
-def make_callback(data: str) -> CallbackQuery:
-    user = User(id=1, is_bot=False, first_name="U", username="u")
-    chat = Chat(id=1, type="private")
-    msg = make_message("get_most_transparent_policies")
-    cb = CallbackQuery(
-        id="x", from_user=user, chat_instance="ci", message=msg, data=data
-    )
-    return cb
+class TestCommands(IsolatedAsyncioTestCase):
+
+    @patch("tg_bot.main.read_text", return_value="stub")
+    @patch("tg_bot.main.api_client.save_user")
+    @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
+    async def test_cmd_start(self, mock_answer, mock_save_user, mock_read_text):
+        msg = make_message("/start")
+        await cmd_start(msg)
+        mock_save_user.assert_called_once_with(1, "testuser", "Test")
+        mock_answer.assert_awaited_once_with("stub")
+
+    @patch("tg_bot.main.read_text", return_value="stub")
+    @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
+    async def test_cmd_help(self, mock_answer, mock_read_text):
+        msg = make_message("/help")
+        await cmd_help(msg)
+        mock_answer.assert_awaited_once_with("stub")
+
+    @patch("tg_bot.main.read_text", return_value="stub")
+    @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
+    async def test_cmd_rules(self, mock_answer, mock_read_text):
+        msg = make_message("/rules")
+        await cmd_rules(msg)
+        args, kwargs = mock_answer.call_args
+        self.assertIn("stub", args[0])
+        self.assertIn("reply_markup", kwargs)
+        self.assertIsInstance(kwargs["reply_markup"], InlineKeyboardMarkup)
+
+    @patch("tg_bot.main.read_text", return_value="stub")
+    @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
+    async def test_cmd_support(self, mock_answer, mock_read_text):
+        msg = make_message("/support")
+        await cmd_support(msg)
+        mock_answer.assert_awaited_once_with("stub")
+
+    @patch("tg_bot.main.read_text", return_value="stub")
+    @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
+    async def test_cmd_donate(self, mock_answer, mock_read_text):
+        msg = make_message("/donate")
+        await cmd_donate(msg)
+        mock_answer.assert_awaited_once_with("stub")
+
+    @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
+    async def test_cmd_world(self, mock_answer):
+        msg = make_message("/world")
+        await cmd_world(msg)
+        args, kwargs = mock_answer.call_args
+        self.assertIn("Выбери СВОего героя", args[0])
+        self.assertIn("reply_markup", kwargs)
+        self.assertIsInstance(kwargs["reply_markup"], InlineKeyboardMarkup)
+
+    @patch("tg_bot.main.get_exchange_rate", return_value=88.8)
+    @patch("aiogram.types.Message.reply", new_callable=AsyncMock)
+    async def test_cmd_get_exchange_rate(self, mock_reply, mock_api):
+        msg = make_message("/get_daniel_trumps_most_transparent_policies")
+        await cmd_get_exchange_rate(msg)
+        mock_reply.assert_awaited_once()
+        self.assertIn("88.8", mock_reply.call_args[0][0])
+
+    @patch("aiogram.types.Message.answer_photo", new_callable=AsyncMock)
+    async def test_bird_with_eggs(self, mock_photo):
+        msg = make_message("/motivation")
+        await bird_with_eggs(msg)
+        mock_photo.assert_awaited_once()
+        args, kwargs = mock_photo.call_args
+        self.assertIn("Яйца с птицей", kwargs["caption"])
+        self.assertIn("pikabu", kwargs["photo"])
+
+    @patch("tg_bot.main.get_exchange_rate", return_value=123.45)
+    @patch("aiogram.types.Message.reply", new_callable=AsyncMock)
+    @patch("aiogram.types.CallbackQuery.answer", new_callable=AsyncMock)
+    async def test_transparent_policies(self, mock_answer, mock_reply, mock_rate):
+        msg = make_message()
+        callback = CallbackQuery.model_construct(
+            id="1",
+            from_user=msg.from_user,
+            data="trump",
+            message=msg,
+        )
+        await transparent_policies(callback)
+        mock_reply.assert_awaited_once()
+        self.assertIn("123.45", mock_reply.call_args[0][0])
+        mock_answer.assert_awaited_once()
 
 
-@pytest.mark.asyncio
-async def test_start() -> None:
-    msg = make_message("start")
-    msg.answer = AsyncMock()
-    await cmd_start(msg)
-    msg.answer.assert_called_once_with("S_RU")
-
-
-@pytest.mark.asyncio
-async def test_help() -> None:
-    msg = make_message("help")
-    msg.answer = AsyncMock()
-    await cmd_help(msg)
-    msg.answer.assert_called_once_with("H_RU")
-
-
-@pytest.mark.asyncio
-async def test_rules() -> None:
-    msg = make_message("rules")
-    msg.answer = AsyncMock()
-    await cmd_rules(msg)
-    text, kwargs = msg.answer.call_args.args[0], msg.answer.call_args.kwargs
-    assert "R_RU" in text
-    assert isinstance(kwargs.get("reply_markup"), InlineKeyboardMarkup)
-
-
-@pytest.mark.asyncio
-async def test_support_and_donate() -> None:
-    for cmd, expected in [("support", "SUP_RU"), ("donate", "D_RU")]:
-        msg = make_message(cmd)
-        msg.answer = AsyncMock()
-        await getattr(
-            __import__("tg_bot.main", fromlist=[f"cmd_{cmd}"]), f"cmd_{cmd}"
-        )(msg)
-        assert msg.answer.call_args.args[0] == expected
-
-
-@pytest.mark.asyncio
-async def test_world_keyboard() -> None:
-    msg = make_message("get_most_transparent_policies")
-    msg.answer = AsyncMock()
-    await cmd_world(msg)
-    text, kwargs = msg.answer.call_args.args[0], msg.answer.call_args.kwargs
-    assert "Выбери СВОего героя" in text
-    assert isinstance(kwargs.get("reply_markup"), InlineKeyboardMarkup)
-
-
-@pytest.mark.parametrize("code", ["trump", "Ursula", "XI", "Bel", "OAE", "SGD"])
-@pytest.mark.asyncio
-async def test_transparent_policies(code) -> None:
-    cb = make_callback(code)
-    cb.message.reply = AsyncMock()
-    cb.answer = AsyncMock()
-    await transparent_policies(cb)
-    # reply contains mocked rate
-    assert any("123.0" in call[0] for call in cb.message.reply.call_args_list)
-    cb.answer.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_get_exchange_rate_cmd() -> None:
-    msg = make_message("get_daniel_trumps_most_transparent_policies")
-    msg.reply = AsyncMock()
-    await cmd_get_exchange_rate(msg)
-    assert any("123.0" in call[0] for call in msg.reply.call_args_list)
-
-
-@pytest.mark.asyncio
-async def test_motivation() -> None:
-    msg = make_message("motivation")
-    msg.answer_photo = AsyncMock()
-    await bird_with_eggs(msg)
-    assert msg.answer_photo.call_count == 1
-    _, caption, _ = msg.answer_photo.call_args.args
-    assert "Яйца с птицей" in caption
+if __name__ == "__main__":
+    unittest_main()

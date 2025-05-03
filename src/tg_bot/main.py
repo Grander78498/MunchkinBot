@@ -34,7 +34,7 @@ except ImportError as e:
 
 
 class Language(str, Enum):
-    """Доступные языки"""
+    """Доступные языки."""
 
     RU = "ru"
     EN = "en"
@@ -43,7 +43,7 @@ class Language(str, Enum):
 
 
 def read_text(key: str, lang: Language) -> str:
-    """Считывание текстовой информации из json
+    """Считывание текстовой информации из json.
 
     Args:
         key (str) - ключ
@@ -69,7 +69,7 @@ api_client = APIClient("http://127.0.0.1:8000")
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message) -> None:
-    """Обработка команды start"""
+    """Обработка команды start."""
     user = message.from_user
     if user is None:
         raise TGException("Ошибка при получении отправителя сообщения")
@@ -79,14 +79,14 @@ async def cmd_start(message: Message) -> None:
 
 @dp.message(Command("help"))
 async def cmd_help(message: Message) -> None:
-    """Обработка команды help"""
+    """Обработка команды help."""
     # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     await message.answer(read_text("help", Language.RU))
 
 
 @dp.message(Command("rules"))
 async def cmd_rules(message: Message) -> None:
-    """Обработка команды rules"""
+    """Обработка команды rules."""
     # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     builder = InlineKeyboardBuilder()
     builder.button(
@@ -100,14 +100,14 @@ async def cmd_rules(message: Message) -> None:
 
 @dp.message(Command("support"))
 async def cmd_support(message: Message) -> None:
-    """Обработка команды support"""
+    """Обработка команды support."""
     # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     await message.answer(read_text("support", Language.RU))
 
 
 @dp.message(Command("donate"))
 async def cmd_donate(message: Message) -> None:
-    """Обработка команды donate"""
+    """Обработка команды donate."""
     # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     await message.answer(read_text("donate", Language.RU))
 
@@ -148,7 +148,7 @@ async def transparent_policies(call: CallbackQuery) -> None:
 
 @dp.message(Command("get_most_transparent_policies"))
 async def cmd_world(message: Message) -> None:
-    """Выдача актуальных валют"""
+    """Выдача актуальных валют."""
     builder = InlineKeyboardBuilder()
     builder.button(text="Трамп", callback_data="trump")
     builder.button(text="Евро", callback_data="Ursula")
@@ -164,14 +164,14 @@ async def cmd_world(message: Message) -> None:
 
 @dp.message(Command("get_daniel_trumps_most_transparent_policies"))
 async def cmd_get_exchange_rate(message: Message) -> None:
-    """Получение курса доллара"""
+    """Получение курса доллара."""
     value = get_exchange_rate(Currencies.USD)
     await message.reply(f"Актуальная политика Данилы Трампова: {value} ₽")
 
 
 @dp.message(Command("motivation"))
 async def bird_with_eggs(message: Message) -> None:
-    """Команда для повышения мотивации"""
+    """Команда для повышения мотивации."""
     await message.answer_photo(
         caption="Яйца с птицей",
         photo="https://cs15.pikabu.ru/post_img/2024/12/29/4/1735451132180917891.jpg",

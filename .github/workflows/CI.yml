@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/actions/setup-env  # Локальный action
       - name: Run tests and show coverage
         run: |
-          if ls src/tests/**/test_*.py 1> /dev/null 2>&1; then
+          if ls src/tests/test_*.py 1> /dev/null 2>&1; then
             uv run coverage run -m pytest
             uv run coverage report --show-missing
           else
@@ -66,7 +66,7 @@ jobs:
 
       - name: Run mutation tests
         run: |
-          if ls src/tests/**/test_*.py 1> /dev/null 2>&1; then
+          if ls src/tests/test_*.py 1> /dev/null 2>&1; then
             uv run mutmut run --paths-to-mutate=$(git ls-files '*.py')
             uv run mutmut results
           else

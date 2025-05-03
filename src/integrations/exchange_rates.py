@@ -1,6 +1,4 @@
-"""
-Получение курсов валют
-"""
+"""Получение курсов валют."""
 
 from enum import Enum
 
@@ -14,7 +12,7 @@ headers = {
 
 
 class Currencies(str, Enum):
-    """Доступные курсы валют"""
+    """Доступные курсы валют."""
 
     CNY = "R01375"
     USD = "R01235"
@@ -26,7 +24,7 @@ class Currencies(str, Enum):
 
 def get_exchange_rate(currency: Currencies) -> float:
     """
-    Получает текущий курс валюты с сайта Центробанка РФ
+    Получает текущий курс валюты с сайта Центробанка РФ.
 
     :param currency: Валюта из перечисления Currencies
     :return: Текущий курс валюты
