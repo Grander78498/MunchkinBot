@@ -41,7 +41,7 @@ except ImportError as e:
 
 
 @pytest.fixture(autouse=True)
-def patch_api_and_text(monkeypatch: Any, tmp_path: str) -> Generator[Any, Any, Any]:
+def patch_api_and_text(monkeypatch: Any, tmp_path: Path) -> Generator[Any, Any, Any]:
     # Мокируем API‑клиент
     monkeypatch.setattr(
         "tg_bot.main.api_client.save_user", lambda *args, **kwargs: None
