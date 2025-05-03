@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/actions/setup-env  # Локальный action
       - name: Run tests and show coverage
         env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TEST_BOT }}
         run: |
           if ls src/tests/test_*.py 1> /dev/null 2>&1; then
             uv run coverage run -m pytest
