@@ -17,10 +17,13 @@ if TYPE_CHECKING:
 class User(CustomSQLModel, table=True):
     """Пользователь"""
 
-    __tablename__ = 'tg_user'
+    __tablename__ = "tg_user"
 
-    tg_id: int = Field(sa_column=Column(
-        BigInteger(), primary_key=True, autoincrement=False, nullable=False))
+    tg_id: int = Field(
+        sa_column=Column(
+            BigInteger(), primary_key=True, autoincrement=False, nullable=False
+        )
+    )
     user_name: str = Field(unique=True, max_length=32)
     full_name: str = Field(unique=True, max_length=128)
 
@@ -30,10 +33,13 @@ class User(CustomSQLModel, table=True):
 class Group(CustomSQLModel, table=True):
     """Телеграм группа"""
 
-    __tablename__ = 'tg_group'
+    __tablename__ = "tg_group"
 
-    tg_id: int = Field(sa_column=Column(
-        BigInteger(), primary_key=True, autoincrement=False, nullable=False))
+    tg_id: int = Field(
+        sa_column=Column(
+            BigInteger(), primary_key=True, autoincrement=False, nullable=False
+        )
+    )
     name: str = Field(unique=True, max_length=32)
 
     games: list["Game"] = lazy_relationship(back_populates="group")
