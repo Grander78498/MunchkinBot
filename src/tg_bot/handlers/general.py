@@ -5,13 +5,15 @@ import sys
 from pathlib import Path
 
 
-from aiogram import Router, F
+from aiogram import Dispatcher, Router, F
 from aiogram.types import Message
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.fsm.context import FSMContext
 
 from tg_bot.states import GeneralState
 from tg_bot.messages import start_message
+
+from tg_bot.utils.enums import KeyBoards
 
 working_dir = Path().absolute().parent
 sys.path.insert(0, str(working_dir))
@@ -29,49 +31,51 @@ except ImportError as e:
 router = Router(name='general')
 
 
-@router.message(F.text.lower() == 'вернуться')
+@router.message(F.text.lower() == KeyBoards.RETURN)
 async def return_handler(message: Message, state: FSMContext):
     """Обработка возвращения."""
     current_state = await state.get_state()
     match current_state:
         case GeneralState.START:
             pass
-        case GeneralState.PARENT_ACCOUNT:
-            await start_message(message)
         case GeneralState.PERSONAL_ACCOUNT:
             await start_message(message)
 
 
-@router.message(F.text.lower().in_(["создать комнату"]))
-async def create_room(message: Message):
+
+@router.message(GeneralState.START, F.text.lower() == KeyBoards.CREATE_ROOM)
+async def create_room(message: Message, state: FSMContext):
     """Создание комнаты."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Пригласить игрока')
-    builder.button(text='Начать игру')
-    builder.button(text='Изменить конфигурацию')
+    builder.button(text=KeyBoards.INVITE_PLAYER)
+    builder.button(text=KeyBoards.START_GAME)
+    builder.button(text=KeyBoards.SETUP_CONFIG)
     builder.adjust(2)
+
+    await state.set_state(GeneralState.CREATE_ROOM)
     await message.answer(text='Создание комнаты', reply_markup=builder.as_markup())
 
 
-@router.message(F.text.lower().in_(["начало игры"]))
+@router.message(GeneralState.CREATE_ROOM, F.text.lower() == KeyBoards.START_GAME)
 async def start_game(message: Message, state: FSMContext):
     """Начало игры."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Посмотреть руку')
-    builder.button(text='Инвентарь')
-    builder.button(text='Подтвердить готовность')
+    builder.button(text=KeyBoards.CHECK_CARDS)
+    builder.button(text=KeyBoards.INVENTORY)
+    builder.button(text=KeyBoards.READY)
     builder.adjust(3)
 
+    await state.set_state(GeneralState.START_GAME)
     await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["ход текущего игрока"]))
-async def current_player_move(message: Message):
+async def current_player_move(message: Message, dp: Dispatcher):
     """Ход игрока (текущего игрока)."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Посмотреть руку')
-    builder.button(text='Открыть дверь')
-    builder.button(text='Инвентарь')
+    builder.button(text=KeyBoards.CHECK_CARDS)
+    builder.button(text=KeyBoards.OPEN_DOOR)
+    builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(2)
     await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
 
@@ -79,8 +83,8 @@ async def current_player_move(message: Message):
 async def churka_player_move(message: Message):
     """Ход игрока (не текущего)."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Посмотреть руку')
-    builder.button(text='Инвентарь')
+    builder.button(text=KeyBoards.CHECK_CARDS)
+    builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(2)
     await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
 
@@ -89,9 +93,9 @@ async def churka_player_move(message: Message):
 async def player_battle(message: Message):
     """бой игрока (после открытия двери и там монстр)."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Посмотреть руку')
-    builder.button(text='Попросить помощь')
-    builder.button(text='Инвентарь')
+    builder.button(text=KeyBoards.CHECK_CARDS)
+    builder.button(text=KeyBoards.REQUEST_HELP)
+    builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(2)
     await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
 
@@ -100,7 +104,7 @@ async def player_battle(message: Message):
 async def player_win(message: Message):
     """Победа игрока над монстром."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Забрать сокровища') # Или распределить сокровища
+    builder.button(text=KeyBoards.TAKE_TREASURE) # Или распределить сокровища
     builder.adjust(1)
     await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
 
@@ -109,65 +113,23 @@ async def player_win(message: Message):
 async def player_lose(message: Message):
     """Игрок сосал."""
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
-    builder.button(text='Сосать')
+    builder.button(text=KeyBoards.LOSE)
+    builder.button(text=KeyBoards.CHECK_CARDS)
+    builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(1)
-    await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
+    await message.answer(text='PLAYER_SUCKING_PLACEHOLDER', reply_markup=builder.as_markup())
 
 
-
-@router.message(F.text.lower().in_(["личный кабинет родителя"]))
-async def parent_account(message: Message, state: FSMContext):
-    builder = ReplyKeyboardBuilder()
-    builder.button(text='Посмотреть СВОих детей')
-    builder.button(text='Статистика детей')
-    builder.button(text='Родительский контроль детей')
-    builder.button(text='Отдать детей в депозит')
-    builder.button(text='Проверить стоимость детей на рынке')
-    builder.button(text='Продажа детей')
-    builder.button(text='Проверить здоровье детей (прямое влияние на цену)')
-    builder.button(text='Узнать оценки в Умскуле')
-    builder.button(text='Открыть дневник')
-    builder.button(text='Поставить в коридор')
-    builder.button(text='Заманить нового ребёнка в СЕМЬЮ)))))))')
-
-    builder.button(text='Вернуться')
-
-    builder.adjust(3)
-    await state.set_state(GeneralState.PARENT_ACCOUNT)
-    await message.answer(text='Родительский аккаунт', reply_markup=builder.as_markup())
-
-@router.message(F.text.lower().in_(["личный кабинет"]))
+@router.message(F.text.lower() == KeyBoards.PERSONAL_ACCOUNT)
 async def personal_account(message: Message, state: FSMContext):
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Просмотр статистики')
-    builder.button(text='Донат')
-    builder.button(text='Вернуться')
+    builder.button(text=KeyBoards.CHECK_STATISTIC)
+    builder.button(text=KeyBoards.DONATE)
+    builder.button(text=KeyBoards.RETURN)
     builder.adjust(2)
 
     await state.set_state(GeneralState.PERSONAL_ACCOUNT)
-    await message.answer(text='Личный кабинет', reply_markup=builder.as_markup())
+    await message.answer(text=KeyBoards.PERSONAL_ACCOUNT, reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["трамп", "евро", "нефритовый стержень", "бульба", "дирхам оаэ", "сингапур"]))

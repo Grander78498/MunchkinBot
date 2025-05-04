@@ -92,3 +92,6 @@ class APIClient:
         """
         result = self._handle_request(Method.GET, f"/user/{tg_id}")
         return result
+    
+    def create_game(self):
+        pass
