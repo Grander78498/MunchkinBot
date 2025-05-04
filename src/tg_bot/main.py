@@ -9,10 +9,10 @@ from enum import Enum
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardMarkup,KeyboardButton
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder, KeyboardBuilder
 from aiogram.filters.command import Command
 from dotenv import load_dotenv
 
@@ -111,7 +111,38 @@ async def cmd_donate(message: Message) -> None:
     # Вставить получение информации о пользователе, чтобы вытягивать язык пользователя
     await message.answer(read_text("donate", Language.RU))
 
-
+@dp.message(F.text.lower().in_(["трамп", "евро", "нефритовый стержень", "бульба", "дирхам оаэ", "сингапур"]))
+async def transparent_policies_v2(message: Message):
+    if message is None:
+        await message.answer("Произошла ошибка при отправке курса")
+        return
+    match message.text.lower():
+        case "трамп":
+            await message.reply(
+                f"Курс доллара равен {get_exchange_rate(Currencies.USD)} ₽"
+            )
+        case "евро":
+            await message.reply(
+                f"Курс евро равен {get_exchange_rate(Currencies.EUR)} ₽"
+            )
+        case "нефритовый стержень":
+            await message.reply(
+                f"Курс юаня равен {get_exchange_rate(Currencies.CNY)} ₽"
+            )
+        case "бульба":
+            await message.reply(
+                f"Курс белорусского рубля равен {get_exchange_rate(Currencies.BYN)} ₽"
+            )
+        case "дирхам оаэ":
+            await message.reply(
+                f"Курс дирхама ОАЭ равен {get_exchange_rate(Currencies.AED)} ₽"
+            )
+        case "сингапур":
+            await message.reply(
+                f"Курс сингапурского доллара равен {get_exchange_rate(Currencies.SGD)} ₽"
+            )
+        case _:
+            await message.answer("Хы")
 @dp.callback_query(F.data.in_(["trump", "Ursula", "XI", "Bel", "OAE", "SGD"]))
 async def transparent_policies(call: CallbackQuery) -> None:
     """Получение САМЫХ актуальных политик."""
@@ -149,16 +180,18 @@ async def transparent_policies(call: CallbackQuery) -> None:
 @dp.message(Command("get_most_transparent_policies"))
 async def cmd_world(message: Message) -> None:
     """Выдача актуальных валют."""
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Трамп", callback_data="trump")
-    builder.button(text="Евро", callback_data="Ursula")
-    builder.button(text="Нефритовый стержень", callback_data="XI")
-    builder.button(text="Бульба", callback_data="Bel")
-    builder.button(text="Дирхам ОАЭ", callback_data="OAE")
-    builder.button(text="Сингапур", callback_data="SGD")
-    builder.adjust(2)
+    kb = [[
+        [KeyboardButton(text="Трамп")],
+        [KeyboardButton(text="Евро")]
+        ],
+        [[KeyboardButton(text="Нефритовый стержень")],
+        [KeyboardButton(text="Бульба")]],
+        [[KeyboardButton(text="Дирхам ОАЭ")],
+        [KeyboardButton(text="Сингапур")]]
+    ]
+    keyboard = ReplyKeyboardMarkup(keyboard=kb)
     await message.answer(
-        "Выбери СВОего героя", reply_markup=builder.as_markup()
+        "Выбери СВОего героя", reply_markup=keyboard
     )
 
 
