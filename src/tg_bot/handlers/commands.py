@@ -15,10 +15,10 @@ from custom_exceptions.bot import TGException
 from integrations import get_exchange_rate, Currencies
 
 api_client = APIClient()
-router = Router(name='commands')
+router = Router(name="commands")
 
 
-@router.message(Command("start"), F.chat.type == 'private')
+@router.message(Command("start"), F.chat.type == "private")
 async def cmd_start(message: Message, state: FSMContext) -> None:
     """Обработка команды start."""
     user = message.from_user
@@ -29,10 +29,10 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     await start_message(message, state)
 
 
-@router.message(Command("start"), F.chat.type.in_({'supergroup', 'group'}))
+@router.message(Command("start"), F.chat.type.in_({"supergroup", "group"}))
 async def cmd_group_start(message: Message) -> None:
     """Обработка команды start в группе."""
-    await message.answer('Спасибо, что добавили бота в супергруппу')
+    await message.answer("Спасибо, что добавили бота в супергруппу")
 
 
 @router.message(Command("help"))
@@ -73,12 +73,13 @@ async def cmd_donate(message: Message) -> None:
 @router.message(Command("get_most_transparent_policies"))
 async def cmd_world(message: Message) -> None:
     """Выдача актуальных валют."""
-    kb = [KeyboardButton(text="Трамп"),
+    kb = [
+        KeyboardButton(text="Трамп"),
         KeyboardButton(text="Евро"),
         KeyboardButton(text="Нефритовый стержень"),
         KeyboardButton(text="Бульба"),
         KeyboardButton(text="Дирхам ОАЭ"),
-        KeyboardButton(text="Сингапур")
+        KeyboardButton(text="Сингапур"),
     ]
     builder = ReplyKeyboardBuilder().add(*kb)
     builder.adjust(2)

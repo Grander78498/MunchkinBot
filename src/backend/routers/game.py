@@ -7,7 +7,12 @@ from fastapi import APIRouter, HTTPException
 from backend.database import AsyncGameSession
 from backend.database.game import Munchkin, Game
 from backend.database.users import User
-from backend.utils.db_functions import get_user, get_game, generate_game_code, get_active_user_game
+from backend.utils.db_functions import (
+    get_user,
+    get_game,
+    generate_game_code,
+    get_active_user_game,
+)
 
 router = APIRouter(
     prefix="/game",
@@ -23,7 +28,7 @@ async def create_game(creator_id: int, session: AsyncGameSession) -> Game:
         code = await generate_game_code(session)
         game = Game(creator=user, code=code)
         session.add(game)
-        
+
         munchkin = Munchkin(game=game, user=user)
         session.add(munchkin)
 
@@ -31,7 +36,9 @@ async def create_game(creator_id: int, session: AsyncGameSession) -> Game:
 
 
 @router.get("")
-async def get_active_game(user_id: int, session: AsyncGameSession) -> Game | None:
+async def get_active_game(
+    user_id: int, session: AsyncGameSession
+) -> Game | None:
     """Создание игровой партии пользователем."""
     async with session.begin():
         game = await get_active_user_game(user_id, session)
@@ -44,7 +51,12 @@ async def get_user_munchkins(
 ) -> list[Munchkin]:
     """Получение манчкинов, созданных пользователем."""
     async with session.begin():
-        stmt = select(User).where(User.tg_id == user_id).join(Munchkin, Munchkin.user_id == User.tg_id).join(Game, Game.id == Munchkin.game_id)
+        stmt = (
+            select(User)
+            .where(User.tg_id == user_id)
+            .join(Munchkin, Munchkin.user_id == User.tg_id)
+            .join(Game, Game.id == Munchkin.game_id)
+        )
         if active is not None:
             stmt = stmt.where(Game.on_going == active)
         result = await session.execute(stmt)
@@ -57,7 +69,6 @@ async def get_user_munchkins(
         elif user is None:
             return []
         return user.munchkins
-
 
 
 @router.post("/{game_code}/munchkin")

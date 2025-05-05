@@ -13,4 +13,3 @@ def read_text(key: str, lang: Language) -> str:
     with open("docs.json", "r", encoding="utf-8") as file:
         texts: dict[str, dict[str, str]] = json.load(file)
         return texts[key][lang]
-    

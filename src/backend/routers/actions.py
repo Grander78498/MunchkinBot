@@ -11,7 +11,6 @@ router = APIRouter(
 )
 
 
-
 @router.get("/{action_id}")
 async def get_action_info(action_id: int, session: AsyncGameSession) -> Action:
     """Получение информации о пользователе."""

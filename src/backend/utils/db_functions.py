@@ -1,4 +1,5 @@
 """Часто используемые функции обращения к БД."""
+
 import string
 import secrets
 
@@ -48,16 +49,22 @@ async def get_game(game_code: str, session: AsyncSession) -> Game:
     game = result.scalar()
     if game is None:
         raise HTTPException(
-            status_code=404, detail="Игры с таким кодом приглашения не существует"
+            status_code=404,
+            detail="Игры с таким кодом приглашения не существует",
         )
     return game
 
 
-async def get_active_user_game(user_id: int, session: AsyncSession) -> Game | None:
-    result = await session.execute(select(Game).where(Game.on_going == True)
-                                   .join(Munchkin, Munchkin.game_id == Game.id)
-                                   .join(User, User.tg_id == Munchkin.user_id)
-                                   .where(User.tg_id == user_id))
+async def get_active_user_game(
+    user_id: int, session: AsyncSession
+) -> Game | None:
+    result = await session.execute(
+        select(Game)
+        .where(Game.on_going == True)
+        .join(Munchkin, Munchkin.game_id == Game.id)
+        .join(User, User.tg_id == Munchkin.user_id)
+        .where(User.tg_id == user_id)
+    )
     game = result.scalar()
     return game
 
@@ -91,7 +98,9 @@ async def get_condition(condition_id: int, session: AsyncSession) -> Condition:
     raises:
         HTTPException - если условия нет в БД
     """
-    result = await session.execute(select(Condition).where(Condition.id == condition_id))
+    result = await session.execute(
+        select(Condition).where(Condition.id == condition_id)
+    )
     condition = result.scalar()
     if condition is None:
         raise HTTPException(
@@ -100,17 +109,23 @@ async def get_condition(condition_id: int, session: AsyncSession) -> Condition:
     return condition
 
 
-async def generate_game_code(session: AsyncSession, length: int = 6, attempts: int = 100) -> str:
+async def generate_game_code(
+    session: AsyncSession, length: int = 6, attempts: int = 100
+) -> str:
     """Генерация случайного кода игры."""
     alphabet = string.ascii_uppercase + string.digits
-    
+
     while True:
-        code = ''.join(secrets.choice(alphabet) for _ in range(length))
+        code = "".join(secrets.choice(alphabet) for _ in range(length))
         for _ in range(attempts):
-            game = (await session.execute(select(Game).where(Game.code == code))).scalar()
+            game = (
+                await session.execute(select(Game).where(Game.code == code))
+            ).scalar()
             if game is None:
                 return code
-            code = ''.join(secrets.choice(alphabet) for _ in range(length))
+            code = "".join(secrets.choice(alphabet) for _ in range(length))
         length += 1
         if length > 20:
-            raise CodeGenerationException('Превышена допустимая длина генерируемого кода игры')
+            raise CodeGenerationException(
+                "Превышена допустимая длина генерируемого кода игры"
+            )
