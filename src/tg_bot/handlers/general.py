@@ -9,7 +9,7 @@ from aiogram.utils.formatting import as_list, Text, Code, Bold
 
 from tg_bot.utils.api_client import APIClient
 from tg_bot.states import GeneralState
-from tg_bot.messages import start_message
+from tg_bot.messages import start_message, room_message
 from tg_bot.utils.enums import KeyBoards
 from integrations import get_exchange_rate, Currencies
 
@@ -20,11 +20,11 @@ router = Router(name='general')
 @router.message(F.text == KeyBoards.RETURN)
 async def return_handler(message: Message, state: FSMContext):
     """Обработка возвращения."""
-    previous_state = (await state.get_data())['previous_state']
+    previous_state = (await state.get_data()).get('previous_state')
     await state.set_state(previous_state)
     match previous_state:
-        case GeneralState.START:
-            await start_message(message)
+        case GeneralState.START | None:
+            await start_message(message, state)
         case GeneralState.PERSONAL_ACCOUNT:
             pass
 
@@ -32,21 +32,29 @@ async def return_handler(message: Message, state: FSMContext):
 @router.message(GeneralState.START, F.text == KeyBoards.CREATE_ROOM)
 async def create_room(message: Message, state: FSMContext):
     """Создание комнаты."""
-    builder = ReplyKeyboardBuilder()
-    builder.button(text=KeyBoards.INVITE_PLAYER)
-    builder.button(text=KeyBoards.START_GAME)
-    builder.button(text=KeyBoards.SETUP_CONFIG)
-    builder.button(text=KeyBoards.RETURN)
-    builder.adjust(2)
 
-    game = api_client.create_game(message.from_user.id)
+    result = api_client.create_game(message.from_user.id)
+    await state.update_data(previous_state=await state.get_state())
+    await state.set_state(GeneralState.CREATE_ROOM)
+    if not result['ok']:
+        builder = ReplyKeyboardBuilder()
+        builder.button(text=KeyBoards.RETURN)
+        await message.answer(text=result['detail'], reply_markup=builder.as_markup())
+    game = result['result']
     text = as_list(
         Text("Игровая партия создана с кодом приглашения: ", Code(game['code'])),
         Text("Чтобы другие манчкины могли присоединиться к партии, пришлите им этот код!")
     )
+    await state.update_data(game_code=game['code'], creator_id=game['creator_id'])
+    await room_message(message, state, text=text)
+
+
+@router.message(GeneralState.START, F.text == KeyBoards.ACTIVE_ROOM)
+async def active_room(message: Message, state: FSMContext):
+    """Заход в активную комнату."""
     await state.update_data(previous_state=await state.get_state())
-    await state.set_state(GeneralState.CREATE_ROOM)
-    await message.answer(**text.as_kwargs(), reply_markup=builder.as_markup())
+    await state.set_state(GeneralState.ACTIVE_ROOM)
+    await room_message(message, state)
 
 
 @router.message(GeneralState.START, F.text == KeyBoards.JOIN_GAME)
@@ -67,16 +75,16 @@ async def entered_invite_code(message: Message, state: FSMContext):
     if not result['ok']:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
-        await message.answer(result['detail'], reply_markup=builder.as_markup())
+        await message.answer(result['result']['detail'], reply_markup=builder.as_markup())
         return
 
     await state.update_data(previous_state=await state.get_state())
     await state.set_state(GeneralState.START)
-    await start_message(message, replace_text="Вам удалось присоединиться к игре, ожидайте её начала")
+    await start_message(message, state, text="Вам удалось присоединиться к игре, ожидайте её начала")
 
 
 @router.message(GeneralState.JOIN_GAME)
-async def entered_invite_code(message: Message, _: FSMContext):
+async def entered_incorrect_invite_code(message: Message):
     """Обработка ввода кода приглашения, если прислали не текст."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)

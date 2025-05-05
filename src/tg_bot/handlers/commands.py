@@ -26,8 +26,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
         raise TGException("Ошибка при получении отправителя сообщения")
     _ = api_client.save_user(user.id, user.username, user.full_name)
 
-    await state.set_state(GeneralState.START)
-    await start_message(message)
+    await start_message(message, state)
 
 
 @router.message(Command("start"), F.chat.type.in_({'supergroup', 'group'}))

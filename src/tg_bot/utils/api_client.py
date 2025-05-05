@@ -4,6 +4,7 @@ import json
 from typing import Any
 from enum import Enum
 import requests
+import time
 
 
 class Method(str, Enum):
@@ -63,14 +64,14 @@ class APIClient(object):
                 response = requests.request(
                     method=method,
                     url=self.base_url + url,
-                    params='&'.join([f'{key}={value}' for key, value in path_params.items()]),
+                    params='&'.join([f'{key}={value}' for key, value in path_params.items() if value is not None]),
                     data=json.dumps(body),
                     timeout=1,
                 )
-            
+            # time.sleep(20)
             if response.status_code != 200:
                 return {"ok": False, **response.json()}
-            return {"ok": True, **response.json()}
+            return {"ok": True, 'result': response.json()}
         except requests.exceptions.ConnectTimeout:
             return {"ok": False, "msg": "API error"}
 
@@ -99,7 +100,16 @@ class APIClient(object):
         result = self._handle_request(Method.POST, f"/game", path_params={'creator_id': creator_id})
         return result
     
-    def add_user_to_game(self, game_code: str, user_id: int):
+    def add_user_to_game(self, game_code: str, user_id: int) -> Any:
         """Добавление пользователя в партию."""
         result = self._handle_request(Method.POST, f"/game/{game_code}/munchkin", path_params={'user_id': user_id})
+        return result
+    
+    def get_user_games(self, user_id: int, active: bool | None = None) -> Any:
+        """Получение манчкинов пользователя"""
+        result = self._handle_request(Method.GET, f"/game/munchkin", path_params={'user_id': user_id, 'active': active})
+        return result
+    
+    def get_active_user_game(self, user_id: int) -> Any:
+        result = self._handle_request(Method.GET, f"/game", path_params={'user_id': user_id})
         return result

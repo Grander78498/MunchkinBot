@@ -8,7 +8,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database.users import User
-from backend.database.game import Game
+from backend.database.game import Game, Munchkin
 from backend.database.actions import Action
 from backend.database.conditions import Condition
 from custom_exceptions.general import CodeGenerationException
@@ -50,6 +50,15 @@ async def get_game(game_code: str, session: AsyncSession) -> Game:
         raise HTTPException(
             status_code=404, detail="Игры с таким кодом приглашения не существует"
         )
+    return game
+
+
+async def get_active_user_game(user_id: int, session: AsyncSession) -> Game | None:
+    result = await session.execute(select(Game).where(Game.on_going == True)
+                                   .join(Munchkin, Munchkin.game_id == Game.id)
+                                   .join(User, User.tg_id == Munchkin.user_id)
+                                   .where(User.tg_id == user_id))
+    game = result.scalar()
     return game
 
 

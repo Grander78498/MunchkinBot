@@ -1,11 +1,13 @@
 """Получение информации о манчкине."""
 
 from sqlalchemy.exc import IntegrityError
+from sqlmodel import select
 from fastapi import APIRouter, HTTPException
 
 from backend.database import AsyncGameSession
-from backend.utils.db_functions import get_user, get_game, generate_game_code
 from backend.database.game import Munchkin, Game
+from backend.database.users import User
+from backend.utils.db_functions import get_user, get_game, generate_game_code, get_active_user_game
 
 router = APIRouter(
     prefix="/game",
@@ -28,14 +30,34 @@ async def create_game(creator_id: int, session: AsyncGameSession) -> Game:
     return game
 
 
+@router.get("")
+async def get_active_game(user_id: int, session: AsyncGameSession) -> Game | None:
+    """Создание игровой партии пользователем."""
+    async with session.begin():
+        game = await get_active_user_game(user_id, session)
+        return game
+
+
 @router.get("/munchkin")
 async def get_user_munchkins(
-    user_id: int, session: AsyncGameSession
+    user_id: int, session: AsyncGameSession, active: bool | None = None
 ) -> list[Munchkin]:
     """Получение манчкинов, созданных пользователем."""
     async with session.begin():
-        user = await get_user(user_id, session)
+        stmt = select(User).where(User.tg_id == user_id).join(Munchkin, Munchkin.user_id == User.tg_id).join(Game, Game.id == Munchkin.game_id)
+        if active is not None:
+            stmt = stmt.where(Game.on_going == active)
+        result = await session.execute(stmt)
+        user = result.scalar()
+        if user is None and active is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Такого пользователя не существует",
+            )
+        elif user is None:
+            return []
         return user.munchkins
+
 
 
 @router.post("/{game_code}/munchkin")

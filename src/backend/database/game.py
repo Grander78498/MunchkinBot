@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field
-from sqlalchemy import UniqueConstraint, SmallInteger
+from sqlalchemy import UniqueConstraint, SmallInteger, BigInteger
 from sqlalchemy.dialects.postgresql import ENUM
 
 from backend.database import CustomSQLModel, lazy_relationship
@@ -28,8 +28,8 @@ class Game(CustomSQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     code: str = Field(unique=True)
-    creator_id: int = Field(foreign_key="tg_user.tg_id")
-    on_going: bool = Field(default=False)
+    creator_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger)
+    on_going: bool = Field(default=True)
     current_player_number: int = Field(default=-1)
 
     creator: "User" = lazy_relationship(back_populates="games")
@@ -44,7 +44,7 @@ class Munchkin(CustomSQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
 
-    user_id: int = Field(foreign_key="tg_user.tg_id")
+    user_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger)
     game_id: int = Field(foreign_key="game.id")
 
     gender: Gender = Field(
