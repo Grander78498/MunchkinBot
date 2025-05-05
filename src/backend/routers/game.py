@@ -21,6 +21,9 @@ async def create_game(creator_id: int, session: AsyncGameSession) -> Game:
         code = await generate_game_code(session)
         game = Game(creator=user, code=code)
         session.add(game)
+        
+        munchkin = Munchkin(game=game, user=user)
+        session.add(munchkin)
 
     return game
 
@@ -35,15 +38,15 @@ async def get_user_munchkins(
         return user.munchkins
 
 
-@router.post("/{game_id}/munchkin")
+@router.post("/{game_code}/munchkin")
 async def create_munchkin(
-    game_id: int, user_id: int, session: AsyncGameSession
+    game_code: str, user_id: int, session: AsyncGameSession
 ) -> Munchkin:
     """Создание манчкина."""
     try:
         async with session.begin():
             user = await get_user(user_id, session)
-            game = await get_game(game_id, session)
+            game = await get_game(game_code, session)
 
             munchkin = Munchkin(user=user, game=game)
             session.add(munchkin)

@@ -1,62 +1,89 @@
 """Основной файл рычагов."""
 
-import os
-import sys
-from pathlib import Path
-
 
 from aiogram import Dispatcher, Router, F
 from aiogram.types import Message
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.formatting import as_list, Text, Code, Bold
 
+from tg_bot.utils.api_client import APIClient
 from tg_bot.states import GeneralState
 from tg_bot.messages import start_message
-
 from tg_bot.utils.enums import KeyBoards
+from integrations import get_exchange_rate, Currencies
 
-working_dir = Path().absolute().parent
-sys.path.insert(0, str(working_dir))
-
-for name in os.listdir(working_dir):
-    if working_dir.joinpath(name).is_dir():
-        sys.path.insert(0, str(working_dir.joinpath(name)))
-
-try:
-    from integrations import get_exchange_rate, Currencies
-except ImportError as e:
-    raise ImportError("Ошибка при импорте внутренних модулей") from e
-
-
+api_client = APIClient()
 router = Router(name='general')
 
 
-@router.message(F.text.lower() == KeyBoards.RETURN)
+@router.message(F.text == KeyBoards.RETURN)
 async def return_handler(message: Message, state: FSMContext):
     """Обработка возвращения."""
-    current_state = await state.get_state()
-    match current_state:
+    previous_state = (await state.get_data())['previous_state']
+    await state.set_state(previous_state)
+    match previous_state:
         case GeneralState.START:
-            pass
-        case GeneralState.PERSONAL_ACCOUNT:
             await start_message(message)
+        case GeneralState.PERSONAL_ACCOUNT:
+            pass
 
 
-
-@router.message(GeneralState.START, F.text.lower() == KeyBoards.CREATE_ROOM)
+@router.message(GeneralState.START, F.text == KeyBoards.CREATE_ROOM)
 async def create_room(message: Message, state: FSMContext):
     """Создание комнаты."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.INVITE_PLAYER)
     builder.button(text=KeyBoards.START_GAME)
     builder.button(text=KeyBoards.SETUP_CONFIG)
+    builder.button(text=KeyBoards.RETURN)
     builder.adjust(2)
 
+    game = api_client.create_game(message.from_user.id)
+    text = as_list(
+        Text("Игровая партия создана с кодом приглашения: ", Code(game['code'])),
+        Text("Чтобы другие манчкины могли присоединиться к партии, пришлите им этот код!")
+    )
+    await state.update_data(previous_state=await state.get_state())
     await state.set_state(GeneralState.CREATE_ROOM)
-    await message.answer(text='Создание комнаты', reply_markup=builder.as_markup())
+    await message.answer(**text.as_kwargs(), reply_markup=builder.as_markup())
 
 
-@router.message(GeneralState.CREATE_ROOM, F.text.lower() == KeyBoards.START_GAME)
+@router.message(GeneralState.START, F.text == KeyBoards.JOIN_GAME)
+async def join_game(message: Message, state: FSMContext):
+    """Присоединение к игре."""
+    builder = ReplyKeyboardBuilder()
+    builder.button(text=KeyBoards.RETURN)
+
+    await state.update_data(previous_state=await state.get_state())
+    await state.set_state(GeneralState.JOIN_GAME)
+    await message.answer("Введите код приглашения", reply_markup=builder.as_markup())
+
+
+@router.message(GeneralState.JOIN_GAME, F.text)
+async def entered_invite_code(message: Message, state: FSMContext):
+    """Обработка ввода кода приглашения."""
+    result = api_client.add_user_to_game(message.text, message.from_user.id)
+    if not result['ok']:
+        builder = ReplyKeyboardBuilder()
+        builder.button(text=KeyBoards.RETURN)
+        await message.answer(result['detail'], reply_markup=builder.as_markup())
+        return
+
+    await state.update_data(previous_state=await state.get_state())
+    await state.set_state(GeneralState.START)
+    await start_message(message, replace_text="Вам удалось присоединиться к игре, ожидайте её начала")
+
+
+@router.message(GeneralState.JOIN_GAME)
+async def entered_invite_code(message: Message, _: FSMContext):
+    """Обработка ввода кода приглашения, если прислали не текст."""
+    builder = ReplyKeyboardBuilder()
+    builder.button(text=KeyBoards.RETURN)
+    await message.answer('Мадагаскарская птица не может быть кодом приглашения, повторите ввод', reply_markup=builder.as_markup())
+
+
+@router.message(GeneralState.CREATE_ROOM, F.text == KeyBoards.START_GAME)
 async def start_game(message: Message, state: FSMContext):
     """Начало игры."""
     builder = ReplyKeyboardBuilder()
@@ -65,6 +92,7 @@ async def start_game(message: Message, state: FSMContext):
     builder.button(text=KeyBoards.READY)
     builder.adjust(3)
 
+    await state.update_data(previous_state=await state.get_state())
     await state.set_state(GeneralState.START_GAME)
     await message.answer(text='START_GAME_PLACEHOLDER', reply_markup=builder.as_markup())
 
@@ -120,7 +148,7 @@ async def player_lose(message: Message):
     await message.answer(text='PLAYER_SUCKING_PLACEHOLDER', reply_markup=builder.as_markup())
 
 
-@router.message(F.text.lower() == KeyBoards.PERSONAL_ACCOUNT)
+@router.message(GeneralState.START, F.text == KeyBoards.PERSONAL_ACCOUNT)
 async def personal_account(message: Message, state: FSMContext):
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CHECK_STATISTIC)
@@ -128,6 +156,7 @@ async def personal_account(message: Message, state: FSMContext):
     builder.button(text=KeyBoards.RETURN)
     builder.adjust(2)
 
+    await state.update_data(previous_state=await state.get_state())
     await state.set_state(GeneralState.PERSONAL_ACCOUNT)
     await message.answer(text=KeyBoards.PERSONAL_ACCOUNT, reply_markup=builder.as_markup())
 

@@ -34,21 +34,21 @@ async def get_user(user_id: int, session: AsyncSession) -> User:
     return user
 
 
-async def get_game(game_id: int, session: AsyncSession) -> Game:
-    """Получение информации об игровой партии по game_id.
+async def get_game(game_code: str, session: AsyncSession) -> Game:
+    """Получение информации об игровой партии по коду приглашения.
 
     args:
-        game_id: int
+        game_code: str - код приглашения
     returns:
         Game - информация об игре из БД
     raises:
         HTTPException - если игровой партии нет в БД
     """
-    result = await session.execute(select(Game).where(Game.id == game_id))
+    result = await session.execute(select(Game).where(Game.code == game_code))
     game = result.scalar()
     if game is None:
         raise HTTPException(
-            status_code=404, detail="Игры с таким id не существует"
+            status_code=404, detail="Игры с таким кодом приглашения не существует"
         )
     return game
 

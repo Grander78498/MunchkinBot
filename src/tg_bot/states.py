@@ -6,5 +6,6 @@ class GeneralState(StatesGroup):
     PERSONAL_ACCOUNT = State()
     CREATE_ROOM = State()
     START_GAME = State()
+    JOIN_GAME = State()
     MY_TURN = State()
     OTHER_TURN = State()

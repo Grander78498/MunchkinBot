@@ -5,12 +5,13 @@ from tg_bot.utils.enums import Language
 from tg_bot.utils.enums import KeyBoards
 
 
-async def start_message(message: Message):
+async def start_message(message: Message, replace_text: str | None = None):
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CREATE_ROOM)
     builder.button(text=KeyBoards.JOIN_GAME)
     builder.button(text=KeyBoards.SUPPORT)
     builder.button(text=KeyBoards.DONATE)
     builder.button(text=KeyBoards.PERSONAL_ACCOUNT)
-    builder.adjust(4)
-    await message.answer(text='Создание комнаты', reply_markup=builder.as_markup())
+    builder.adjust(2)
+    text = replace_text if replace_text is not None else read_text('start', Language.RU)
+    await message.answer(text=text, reply_markup=builder.as_markup())

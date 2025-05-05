@@ -22,6 +22,7 @@ try:
     from custom_exceptions.general import EnvException
     from tg_bot.handlers.commands import router as command_router
     from tg_bot.handlers.general import router as general_router
+    from tg_bot.utils.api_client import APIClient
 except ImportError as e:
     raise ImportError("Ошибка при импорте внутренних модулей") from e
 
@@ -36,6 +37,7 @@ if token is None:
     raise EnvException("Отсутствует переменная среды BOT_TOKEN")
 
 bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+api_client = APIClient(base_url='http://127.0.0.1:8000')
 dp = Dispatcher()
 dp.include_router(command_router)
 dp.include_router(general_router)

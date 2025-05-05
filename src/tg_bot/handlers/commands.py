@@ -1,34 +1,20 @@
 """Файл со всеми командами."""
 
-import os
-import sys
-from pathlib import Path
-
 from aiogram import Router, F
 from aiogram.types import Message, KeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
-working_dir = Path().absolute().parent
-sys.path.insert(0, str(working_dir))
+from tg_bot.utils.api_client import APIClient
+from tg_bot.utils.utils import read_text
+from tg_bot.utils.enums import Language
+from tg_bot.messages import start_message
+from tg_bot.states import GeneralState
+from custom_exceptions.bot import TGException
+from integrations import get_exchange_rate, Currencies
 
-for name in os.listdir(working_dir):
-    if working_dir.joinpath(name).is_dir():
-        sys.path.insert(0, str(working_dir.joinpath(name)))
-
-try:
-    from tg_bot.utils.api_client import APIClient
-    from tg_bot.utils.utils import read_text
-    from tg_bot.utils.enums import Language
-    from tg_bot.messages import start_message
-    from tg_bot.states import GeneralState
-    from custom_exceptions.bot import TGException
-    from integrations import get_exchange_rate, Currencies
-except ImportError as e:
-    raise ImportError("Ошибка при импорте внутренних модулей") from e
-
-api_client = APIClient("http://127.0.0.1:8000")
+api_client = APIClient()
 router = Router(name='commands')
 
 
@@ -38,7 +24,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     user = message.from_user
     if user is None:
         raise TGException("Ошибка при получении отправителя сообщения")
-    api_client.save_user(user.id, user.username, user.full_name)
+    _ = api_client.save_user(user.id, user.username, user.full_name)
 
     await state.set_state(GeneralState.START)
     await start_message(message)
