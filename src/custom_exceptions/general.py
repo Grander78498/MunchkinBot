@@ -3,3 +3,7 @@
 
 class EnvException(Exception):
     """Исключение на случай отсутствия env файла."""
+
+
+class CodeGenerationException(RecursionError):
+    """Исключение на случай неостанавливающейся генерации кода игры."""

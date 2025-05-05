@@ -29,18 +29,4 @@ class User(CustomSQLModel, table=True):
     full_name: str = Field(unique=True, max_length=128)
 
     munchkins: list["Munchkin"] = lazy_relationship(back_populates="user")
-
-
-class Group(CustomSQLModel, table=True):
-    """Телеграм группа."""
-
-    __tablename__ = "tg_group"
-
-    tg_id: int = Field(
-        sa_column=Column(
-            BigInteger(), primary_key=True, autoincrement=False, nullable=False
-        )
-    )
-    name: str = Field(unique=True, max_length=32)
-
-    games: list["Game"] = lazy_relationship(back_populates="group")
+    games: list["Game"] = lazy_relationship(back_populates="creator")

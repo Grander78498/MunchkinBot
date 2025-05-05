@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, HTTPException
 
 from backend.database import AsyncGameSession
-from backend.database.functions import get_user, get_group, get_game
+from backend.utils.db_functions import get_user, get_game, generate_game_code
 from backend.database.game import Munchkin, Game
 
 router = APIRouter(
@@ -14,11 +14,12 @@ router = APIRouter(
 
 
 @router.post("")
-async def create_game(group_id: int, session: AsyncGameSession) -> Game:
-    """Создание игровой партии в группе."""
+async def create_game(creator_id: int, session: AsyncGameSession) -> Game:
+    """Создание игровой партии пользователем."""
     async with session.begin():
-        group = await get_group(group_id, session)
-        game = Game(group=group)
+        user = await get_user(creator_id, session)
+        code = await generate_game_code(session)
+        game = Game(creator=user, code=code)
         session.add(game)
 
     return game

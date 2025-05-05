@@ -18,21 +18,21 @@ from backend.database.link_models import (
 from backend.database.enums import Gender, TurnType
 
 if TYPE_CHECKING:
-    from backend.database.users import User, Group
-    from backend.database.cards import GameCard, GameItem, Monster, Stats
     from backend.database.actions import Action
+    from backend.database.users import User
+    from backend.database.cards import GameCard, GameItem, Monster, Stats
 
 
 class Game(CustomSQLModel, table=True):
     """Информация об игровой партии."""
 
     id: int | None = Field(default=None, primary_key=True)
-    group_id: int = Field(foreign_key="tg_group.tg_id")
+    code: str = Field(unique=True)
+    creator_id: int = Field(foreign_key="tg_user.tg_id")
     on_going: bool = Field(default=False)
     current_player_number: int = Field(default=-1)
 
-    group: "Group" = lazy_relationship(back_populates="games")
-
+    creator: "User" = lazy_relationship(back_populates="games")
     munchkins: list["Munchkin"] = lazy_relationship(back_populates="game")
     combats: list["Combat"] = lazy_relationship(back_populates="game")
 

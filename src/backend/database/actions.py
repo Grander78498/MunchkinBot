@@ -15,8 +15,8 @@ from backend.database.link_models import (
 )
 
 if TYPE_CHECKING:
-    from backend.database.game import Munchkin
     from backend.database.conditions import Condition
+    from backend.database.game import Munchkin
     from backend.database.cards import Card, Monster
 
 

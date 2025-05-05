@@ -78,6 +78,7 @@ class Card(CardBase, table=True):
     game_cards: list["GameCard"] = lazy_relationship(back_populates="card")
     item: Optional["Item"] = lazy_relationship(back_populates="card")
     monster: Optional["Monster"] = lazy_relationship(back_populates="card")
+    stats: Optional["Stats"] = lazy_relationship(back_populates="card")
 
     actions: list["Action"] = lazy_relationship(
         back_populates="cards", link_model=CardAction
@@ -180,8 +181,9 @@ class Stats(MonsterBase, table=True):
     """Таблица для характеристик манчкина."""
 
     card_id: int = Field(foreign_key="card.id", primary_key=True)
+    stats_type_id: int = Field(foreign_key="statstype.id")
 
-    card: Card = lazy_relationship(back_populates="monster")
+    card: Card = lazy_relationship(back_populates="stats")
     munchkins: list["Munchkin"] = lazy_relationship(
         back_populates="stats", link_model=MunchkinStats
     )
@@ -213,6 +215,8 @@ class Item(ItemBase, table=True):
     """Таблица шмотки."""
 
     card_id: int = Field(foreign_key="card.id", primary_key=True)
+    item_type_id: int = Field(foreign_key="itemtype.id")
+    item_property_id: int = Field(foreign_key="itemproperty.id")
 
     card: Card = lazy_relationship(back_populates="item")
     game_items: list["GameItem"] = lazy_relationship(
