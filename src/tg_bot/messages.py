@@ -42,6 +42,7 @@ async def room_message(
     message: Message, state: FSMContext, text: Text | None = None
 ):
     user = message.from_user
+    # TODO: заменить на апи запрос, опционально, т.к. можно "вернуться" к текущей игре, удалившись из неё
     data = await state.get_data()
 
     builder = ReplyKeyboardBuilder()
@@ -49,6 +50,10 @@ async def room_message(
     if user.id == data["creator_id"]:
         builder.button(text=KeyBoards.START_GAME)
         builder.button(text=KeyBoards.SETUP_CONFIG)
+        builder.button(text=KeyBoards.DELETE_PARTY)
+    else:
+        builder.button(text=KeyBoards.LEAVE_PARTY)
+
     builder.button(text=KeyBoards.RETURN)
     builder.adjust(2)
 

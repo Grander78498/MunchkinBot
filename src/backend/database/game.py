@@ -28,12 +28,12 @@ class Game(CustomSQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     code: str = Field(unique=True)
-    creator_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger)
+    creator_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger, ondelete="CASCADE")
     on_going: bool = Field(default=True)
     current_player_number: int = Field(default=-1)
 
     creator: "User" = lazy_relationship(back_populates="games")
-    munchkins: list["Munchkin"] = lazy_relationship(back_populates="game")
+    munchkins: list["Munchkin"] = lazy_relationship(back_populates="game", cascade_delete=True)
     combats: list["Combat"] = lazy_relationship(back_populates="game")
 
 
@@ -44,8 +44,8 @@ class Munchkin(CustomSQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
 
-    user_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger)
-    game_id: int = Field(foreign_key="game.id")
+    user_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger, ondelete="CASCADE")
+    game_id: int = Field(foreign_key="game.id", ondelete="CASCADE")
 
     gender: Gender = Field(
         default=Gender.MALE, sa_type=ENUM(Gender)

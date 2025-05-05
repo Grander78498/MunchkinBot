@@ -1,10 +1,12 @@
 """Получение информации о манчкине."""
+from typing import Any
 
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 from fastapi import APIRouter, HTTPException
 
 from backend.database import AsyncGameSession
+from backend.database.responses import SuccessfulResponse
 from backend.database.game import Munchkin, Game
 from backend.database.users import User
 from backend.utils.db_functions import (
@@ -100,3 +102,20 @@ async def get_game_munchkins(
     async with session.begin():
         game = await get_game(game_id, session)
         return game.munchkins
+
+
+@router.delete("/{game_code}", response_model=SuccessfulResponse)
+async def delete_game(game_code: str, session: AsyncGameSession) -> Any:
+    async with session.begin():
+        game = await get_game(game_code, session)
+        await session.delete(game)
+        return {'msg': 'Удалено'}
+    
+
+@router.delete("/{game_code}/munchkin", response_model=SuccessfulResponse)
+async def delete_user_from_game(game_code: str, user_id: int, session: AsyncGameSession) -> Any:
+    async with session.begin():
+        result = await session.execute(select(Munchkin).join(Game, Game.id == Munchkin.game_id).where(Munchkin.user_id == user_id, Game.code == game_code))
+        munchkin = result.scalar()
+        await session.delete(munchkin)
+        return {'msg': 'Удалено'}

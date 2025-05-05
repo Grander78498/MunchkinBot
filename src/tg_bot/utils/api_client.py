@@ -11,6 +11,7 @@ class Method(str, Enum):
 
     GET = "get"
     POST = "post"
+    DELETE = "delete"
 
     def upper(self) -> str:
         """Метод, чтобы requests мог вызвать его у себя под капотом."""
@@ -150,5 +151,17 @@ class APIClient(object):
     async def get_active_user_game(self, user_id: int) -> Any:
         result = await self._handle_request(
             Method.GET, f"/game", path_params={"user_id": user_id}
+        )
+        return result
+
+    async def delete_game(self, game_code: str) -> Any:
+        result = await self._handle_request(
+            Method.DELETE, f"/game/{game_code}"
+        )
+        return result
+    
+    async def delete_user_from_game(self, game_code: str, user_id: int) -> Any:
+        result = await self._handle_request(
+            Method.DELETE, f"/game/{game_code}/munchkin", path_params={'user_id': user_id}
         )
         return result

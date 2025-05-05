@@ -2,6 +2,7 @@
 
 from aiogram import Dispatcher, Router, F
 from aiogram.types import Message
+from aiogram.filters import StateFilter
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.formatting import as_list, Text, Code, Bold
@@ -87,7 +88,7 @@ async def entered_invite_code(message: Message, state: FSMContext):
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
         await message.answer(
-            result["result"]["detail"], reply_markup=builder.as_markup()
+            result["detail"], reply_markup=builder.as_markup()
         )
         return
 
@@ -187,6 +188,20 @@ async def player_lose(message: Message):
     await message.answer(
         text="PLAYER_SUCKING_PLACEHOLDER", reply_markup=builder.as_markup()
     )
+
+
+@router.message(StateFilter(GeneralState.ACTIVE_ROOM, GeneralState.CREATE_ROOM), F.text == KeyBoards.DELETE_PARTY)
+async def delete_party(message: Message, state: FSMContext):
+    data = await state.get_data()
+    await api_client.delete_game(data['game_code'])
+    await start_message(message, state)
+    
+
+@router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.LEAVE_PARTY)
+async def leave_party(message: Message, state: FSMContext):
+    data = await state.get_data()
+    await api_client.delete_user_from_game(data['game_code'], message.from_user.id)
+    await start_message(message, state)
 
 
 @router.message(GeneralState.START, F.text == KeyBoards.PERSONAL_ACCOUNT)

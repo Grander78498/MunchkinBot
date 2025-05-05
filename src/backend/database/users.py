@@ -28,5 +28,5 @@ class User(CustomSQLModel, table=True):
     user_name: str = Field(unique=True, max_length=32)
     full_name: str = Field(unique=True, max_length=128)
 
-    munchkins: list["Munchkin"] = lazy_relationship(back_populates="user")
-    games: list["Game"] = lazy_relationship(back_populates="creator")
+    munchkins: list["Munchkin"] = lazy_relationship(back_populates="user", cascade_delete=True)
+    games: list["Game"] = lazy_relationship(back_populates="creator", cascade_delete=True)
