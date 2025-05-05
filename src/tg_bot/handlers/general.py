@@ -33,13 +33,14 @@ async def return_handler(message: Message, state: FSMContext):
 async def create_room(message: Message, state: FSMContext):
     """Создание комнаты."""
 
-    result = api_client.create_game(message.from_user.id)
+    result = await api_client.create_game(message.from_user.id)
     await state.update_data(previous_state=await state.get_state())
     await state.set_state(GeneralState.CREATE_ROOM)
     if not result['ok']:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
         await message.answer(text=result['detail'], reply_markup=builder.as_markup())
+    print(result)
     game = result['result']
     text = as_list(
         Text("Игровая партия создана с кодом приглашения: ", Code(game['code'])),
@@ -71,7 +72,7 @@ async def join_game(message: Message, state: FSMContext):
 @router.message(GeneralState.JOIN_GAME, F.text)
 async def entered_invite_code(message: Message, state: FSMContext):
     """Обработка ввода кода приглашения."""
-    result = api_client.add_user_to_game(message.text, message.from_user.id)
+    result = await api_client.add_user_to_game(message.text, message.from_user.id)
     if not result['ok']:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)

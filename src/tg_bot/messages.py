@@ -12,7 +12,7 @@ api_client = APIClient()
 
 
 async def start_message(message: Message, state: FSMContext, text: str | None = None):
-    active_game = api_client.get_active_user_game(message.from_user.id)['result']
+    active_game = (await api_client.get_active_user_game(message.from_user.id))['result']
 
     builder = ReplyKeyboardBuilder()
     if active_game is None:

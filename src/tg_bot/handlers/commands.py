@@ -24,7 +24,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     user = message.from_user
     if user is None:
         raise TGException("Ошибка при получении отправителя сообщения")
-    _ = api_client.save_user(user.id, user.username, user.full_name)
+    _ = await api_client.save_user(user.id, user.username, user.full_name)
 
     await start_message(message, state)
 

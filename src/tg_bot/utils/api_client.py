@@ -4,6 +4,8 @@ import json
 from typing import Any
 from enum import Enum
 import requests
+import aiohttp
+import asyncio
 import time
 
 
@@ -30,8 +32,15 @@ class APIClient(object):
         """Класс обработки обращений к API."""
         if base_url is not None:
             self.base_url = base_url
+            self.session = aiohttp.ClientSession(base_url=base_url)
 
-    def _handle_request(
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, *args):
+        await self.session.close()
+
+    async def _handle_request(
         self,
         method: Method,
         url: str,
@@ -53,33 +62,46 @@ class APIClient(object):
             dict[str, Any]: Ответ от сервера.
         """
         try:
-            if path_params is None:
-                response = requests.request(
-                    method=method,
-                    url=self.base_url + url,
-                    data=json.dumps(body),
-                    timeout=1,
-                )
+            if path_params is not None:
+                params = '&'.join([f'{key}={value}' for key, value in path_params.items() if value is not None])
             else:
-                response = requests.request(
-                    method=method,
-                    url=self.base_url + url,
-                    params='&'.join([f'{key}={value}' for key, value in path_params.items() if value is not None]),
-                    data=json.dumps(body),
-                    timeout=1,
-                )
-            # time.sleep(20)
-            if response.status_code != 200:
-                return {"ok": False, **response.json()}
-            return {"ok": True, 'result': response.json()}
+                params = ""
+            
+            async with self.session.request(
+                method=method,
+                url=url,
+                params=params,
+                json=body,
+                timeout=1
+            ) as response:
+                # if path_params is None:
+                #     response = requests.request(
+                #         method=method,
+                #         url=self.base_url + url,
+                #         data=json.dumps(body),
+                #         timeout=1,
+                #     )
+                # else:
+                #     response = requests.request(
+                #         method=method,
+                #         url=self.base_url + url,
+                #         params='&'.join([f'{key}={value}' for key, value in path_params.items() if value is not None]),
+                #         data=json.dumps(body),
+                #         timeout=1,
+                #     )
+                status_code = response.status
+                result = await response.json()
+                if status_code != 200:
+                    return {"ok": False, **result}
+                return {"ok": True, 'result': result}
         except requests.exceptions.ConnectTimeout:
-            return {"ok": False, "msg": "API error"}
+            return {"ok": False, "detail": "API error"}
 
-    def save_user(
+    async def save_user(
         self, tg_id: int, user_name: str | None, full_name: str
     ) -> Any:
         """Сохранение юзера."""
-        result = self._handle_request(
+        result = await self._handle_request(
             Method.POST,
             "/telegram/user",
             body={
@@ -90,26 +112,26 @@ class APIClient(object):
         )
         return result
 
-    def get_user(self, tg_id: int) -> Any:
+    async def get_user(self, tg_id: int) -> Any:
         """Получение информации о пользователе."""
-        result = self._handle_request(Method.GET, f"/telegram/user/{tg_id}")
+        result = await self._handle_request(Method.GET, f"/telegram/user/{tg_id}")
         return result
     
-    def create_game(self, creator_id: int) -> Any:
+    async def create_game(self, creator_id: int) -> Any:
         """Создание игровой партии."""
-        result = self._handle_request(Method.POST, f"/game", path_params={'creator_id': creator_id})
+        result = await self._handle_request(Method.POST, f"/game", path_params={'creator_id': creator_id})
         return result
     
-    def add_user_to_game(self, game_code: str, user_id: int) -> Any:
+    async def add_user_to_game(self, game_code: str, user_id: int) -> Any:
         """Добавление пользователя в партию."""
-        result = self._handle_request(Method.POST, f"/game/{game_code}/munchkin", path_params={'user_id': user_id})
+        result = await self._handle_request(Method.POST, f"/game/{game_code}/munchkin", path_params={'user_id': user_id})
         return result
     
-    def get_user_games(self, user_id: int, active: bool | None = None) -> Any:
+    async def get_user_games(self, user_id: int, active: bool | None = None) -> Any:
         """Получение манчкинов пользователя"""
-        result = self._handle_request(Method.GET, f"/game/munchkin", path_params={'user_id': user_id, 'active': active})
+        result = await self._handle_request(Method.GET, f"/game/munchkin", path_params={'user_id': user_id, 'active': active})
         return result
     
-    def get_active_user_game(self, user_id: int) -> Any:
-        result = self._handle_request(Method.GET, f"/game", path_params={'user_id': user_id})
+    async def get_active_user_game(self, user_id: int) -> Any:
+        result = await self._handle_request(Method.GET, f"/game", path_params={'user_id': user_id})
         return result

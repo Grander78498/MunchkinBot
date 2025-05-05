@@ -36,16 +36,16 @@ token = os.getenv("BOT_TOKEN")
 if token is None:
     raise EnvException("Отсутствует переменная среды BOT_TOKEN")
 
-bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-api_client = APIClient(base_url='http://127.0.0.1:8000')
-dp = Dispatcher()
-dp.include_router(command_router)
-dp.include_router(general_router)
-
 
 async def main() -> None:
     """Запуск бота."""
-    await dp.start_polling(bot)
+    bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    dp = Dispatcher()
+    dp.include_router(command_router)
+    dp.include_router(general_router)
+    async with APIClient(base_url='http://127.0.0.1:8000') as _:
+        await dp.start_polling(bot)
+        
 
 
 if __name__ == "__main__":
