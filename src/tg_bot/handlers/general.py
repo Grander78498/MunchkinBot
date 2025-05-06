@@ -1,6 +1,6 @@
 """Основной файл рычагов."""
 
-from aiogram import Dispatcher, Router, F
+from aiogram import Bot, Dispatcher, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.formatting import as_list, Text, Code, Bold
@@ -11,6 +11,7 @@ from tg_bot.messages import start_message, room_message, members_message
 from tg_bot.states import GeneralState
 from tg_bot.utils.api_client import APIClient
 from tg_bot.utils.enums import KeyBoards
+from tg_bot.stuff import deleted_from_game
 
 api_client = APIClient()
 router = Router(name="general")
@@ -23,7 +24,7 @@ async def return_handler(message: Message, state: FSMContext):
     await state.set_state(previous_state)
     match previous_state:
         case GeneralState.START | None:
-            await start_message(message, state)
+            await start_message(state, message=message)
         case GeneralState.ACTIVE_ROOM:
             await room_message(message, state)
         case GeneralState.MEMBERS:
@@ -35,7 +36,7 @@ async def create_room(message: Message, state: FSMContext):
     """Создание комнаты."""
 
     response = await api_client.create_game(message.from_user.id)
-    await state.update_data(previous_state=await state.get_state())
+    await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.ACTIVE_ROOM)
     if not response.ok:
         builder = ReplyKeyboardBuilder()
@@ -62,7 +63,7 @@ async def create_room(message: Message, state: FSMContext):
 @router.message(GeneralState.START, F.text == KeyBoards.ACTIVE_ROOM)
 async def active_room(message: Message, state: FSMContext):
     """Заход в активную комнату."""
-    await state.update_data(previous_state=await state.get_state())
+    await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.ACTIVE_ROOM)
     await room_message(message, state)
 
@@ -73,7 +74,7 @@ async def join_game(message: Message, state: FSMContext):
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
 
-    await state.update_data(previous_state=await state.get_state())
+    await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.JOIN_GAME)
     await message.answer(
         "Введите код приглашения", reply_markup=builder.as_markup()
@@ -132,7 +133,7 @@ async def start_game(message: Message, state: FSMContext):
 
 
 @router.message(F.text.lower().in_(["ход текущего игрока"]))
-async def current_player_move(message: Message, dp: Dispatcher):
+async def current_player_move(message: Message):
     """Ход игрока (текущего игрока)."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CHECK_CARDS)
@@ -194,14 +195,17 @@ async def player_lose(message: Message):
 
 
 @router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.DELETE_PARTY)
-async def delete_party(message: Message, state: FSMContext):
+async def delete_party(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     response = await api_client.delete_game(data['game_code'])
     if not response.ok:
         await message.answer(text=response.detail)
     else:
+        user_id_list = [x['user_id'] for x in response.result if x['user_id'] != message.from_user.id]
+        for user_id in user_id_list:
+            await deleted_from_game(bot, user_id)
         await message.answer(text='Игра успешно удалена')
-    await start_message(message, state)
+    await start_message(state, message=message)
 
 
 @router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.LEAVE_PARTY)
@@ -212,7 +216,7 @@ async def leave_party(message: Message, state: FSMContext):
         await message.answer(text=response.detail)
     else:
         await message.answer(text='Вы успешно вышли из игры!')
-    await start_message(message, state)
+    await start_message(state, message=message)
 
 
 @router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.MEMBERS)
@@ -257,7 +261,7 @@ async def username_entered(message: Message, state: FSMContext):
 
 
 @router.message(GeneralState.MEMBER_INFO, F.text == KeyBoards.BAN_MEMBER)
-async def ban_handler(message: Message, state: FSMContext):
+async def ban_handler(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     response = await api_client.ban_user(data['game_code'], data['user_id'])
     builder = ReplyKeyboardBuilder()
@@ -265,6 +269,7 @@ async def ban_handler(message: Message, state: FSMContext):
     if not response.ok:
         await message.answer(response.detail)
     else:
+        await deleted_from_game(bot, data['user_id'])
         await message.answer(response.result['msg'])
 
     await members_message(message, state)
@@ -283,7 +288,7 @@ async def personal_account(message: Message, state: FSMContext):
     builder.button(text=KeyBoards.RETURN)
     builder.adjust(2)
 
-    await state.update_data(previous_state=await state.get_state())
+    await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.PERSONAL_ACCOUNT)
     await message.answer(
         text=KeyBoards.PERSONAL_ACCOUNT, reply_markup=builder.as_markup()

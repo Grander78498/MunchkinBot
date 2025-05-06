@@ -1,3 +1,4 @@
+from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.formatting import as_list, as_marked_list, Text, Code, Bold
@@ -12,9 +13,15 @@ api_client = APIClient()
 
 
 async def start_message(
-        message: Message, state: FSMContext, text: str | None = None
+    state: FSMContext, 
+    message: Message | None = None, 
+    text: str | None = None, 
+    bot: Bot | None = None,
+    user_id: int | None = None
 ):
-    active_game = (await api_client.get_active_user_game(message.from_user.id)).result
+    if message is not None and user_id is None:
+        user_id = message.from_user.id
+    active_game = (await api_client.get_active_user_game(user_id)).result
 
     builder = ReplyKeyboardBuilder()
     if active_game is None:
@@ -33,14 +40,16 @@ async def start_message(
         text = read_text("start", Language.RU)
 
     await state.set_state(GeneralState.START)
-    await message.answer(text=text, reply_markup=builder.as_markup())
+    if message is not None:
+        await message.answer(text=text, reply_markup=builder.as_markup())
+    else:
+        await bot.send_message(chat_id=user_id, text=text, reply_markup=builder.as_markup())
 
 
 async def room_message(
         message: Message, state: FSMContext, text: Text | None = None
 ):
     user = message.from_user
-    # TODO: заменить на апи запрос, опционально, т.к. можно "вернуться" к текущей игре, удалившись из неё
     active_game = (await api_client.get_active_user_game(message.from_user.id)).result
 
     builder = ReplyKeyboardBuilder()

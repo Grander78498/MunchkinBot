@@ -23,6 +23,7 @@ try:
     from tg_bot.handlers.commands import router as command_router
     from tg_bot.handlers.general import router as general_router
     from tg_bot.utils.api_client import APIClient
+    from tg_bot.settings import get_settings
 except ImportError as e:
     raise ImportError("Ошибка при импорте внутренних модулей") from e
 
@@ -34,17 +35,15 @@ token = os.getenv("BOT_TOKEN")
 if token is None:
     raise EnvException("Отсутствует переменная среды BOT_TOKEN")
 
+settings = get_settings(token)
+
 
 async def main() -> None:
     """Запуск бота."""
-    bot = Bot(
-        token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-    )
-    dp = Dispatcher()
-    dp.include_router(command_router)
-    dp.include_router(general_router)
+    settings.dp.include_router(command_router)
+    settings.dp.include_router(general_router)
     async with APIClient(base_url="http://127.0.0.1:8000") as _:
-        await dp.start_polling(bot)
+        await settings.dp.start_polling(settings.bot)
 
 
 if __name__ == "__main__":

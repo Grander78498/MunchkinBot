@@ -116,12 +116,14 @@ async def get_game_munchkins(
         return [munchkin.user for munchkin in game.munchkins]
 
 
-@router.delete("/{game_code}", response_model=SuccessfulResponse)
-async def delete_game(game_code: str, session: AsyncGameSession) -> Any:
+@router.delete("/{game_code}")
+async def delete_game(game_code: str, session: AsyncGameSession) -> list[Munchkin]:
     async with session.begin():
-        game = await get_game(game_code, session)
+        result = await session.execute(select(Game).join(Munchkin).where(Game.code == game_code, Game.creator_id != Munchkin.user_id))
+        game = result.scalar()
+        munchkins = game.munchkins
         await session.delete(game)
-        return {'msg': 'Удалено'}
+        return munchkins
 
 
 @router.delete("/{game_code}/munchkin", response_model=SuccessfulResponse)

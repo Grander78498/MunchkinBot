@@ -1,6 +1,6 @@
 """Таблицы для связей многие-ко-многим."""
 
-from sqlalchemy import SmallInteger
+from sqlalchemy import SmallInteger, BigInteger
 from sqlmodel import Field
 
 from backend.database import CustomSQLModel
@@ -14,8 +14,8 @@ class BannedMunchkin(CustomSQLModel, table=True):
         ondelete="CASCADE"
     )
     user_id: int | None = Field(
-        default=None, primary_key=True, foreign_key="tg_user.tg_id",
-        ondelete="CASCADE"
+        default=None, primary_key=True, sa_type=BigInteger,
+        foreign_key="tg_user.tg_id", ondelete="CASCADE"
     )
 
 
