@@ -14,9 +14,7 @@ api_client = APIClient()
 async def start_message(
         message: Message, state: FSMContext, text: str | None = None
 ):
-    active_game = (await api_client.get_active_user_game(message.from_user.id))[
-        "result"
-    ]
+    active_game = (await api_client.get_active_user_game(message.from_user.id)).result
 
     builder = ReplyKeyboardBuilder()
     if active_game is None:
@@ -43,9 +41,7 @@ async def room_message(
 ):
     user = message.from_user
     # TODO: заменить на апи запрос, опционально, т.к. можно "вернуться" к текущей игре, удалившись из неё
-    active_game = (await api_client.get_active_user_game(message.from_user.id))[
-        "result"
-    ]
+    active_game = (await api_client.get_active_user_game(message.from_user.id)).result
 
     builder = ReplyKeyboardBuilder()
     # builder.button(text=KeyBoards.INVITE_PLAYER)
@@ -74,7 +70,7 @@ async def room_message(
 
 async def members_message(message: Message, state: FSMContext):
     data = await state.get_data()
-    result = (await api_client.get_munchkins(data['game_code']))['result']
+    result = (await api_client.get_munchkins(data['game_code'])).result
     text = as_marked_list(
         *[Text(Bold(user['full_name']), " (", Code(user['user_name']), ")") for user in result],
         marker='👤'

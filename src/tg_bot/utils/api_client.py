@@ -5,6 +5,13 @@ from typing import Any
 
 import aiohttp
 import requests
+from pydantic import BaseModel
+
+
+class APIResponse(BaseModel):
+    ok: bool
+    detail: str | None = None
+    result: Any | None = None
 
 
 class Method(str, Enum):
@@ -47,7 +54,7 @@ class APIClient(object):
             url: str,
             path_params: dict[str, Any] | None = None,
             body: dict[str, Any] | None = None,
-    ) -> Any:
+    ) -> APIResponse:
         """Отправка запроса с заданными параметрами.
 
         Args:
@@ -95,14 +102,14 @@ class APIClient(object):
                 status_code = response.status
                 result = await response.json()
                 if status_code != 200:
-                    return {"ok": False, **result}
-                return {"ok": True, "result": result}
+                    return APIResponse(ok=False, **result)
+                return APIResponse(ok=True, result=result)
         except requests.exceptions.ConnectTimeout:
-            return {"ok": False, "detail": "API error"}
+            return APIResponse(ok=False, detail="API Error")
 
     async def save_user(
             self, tg_id: int, user_name: str | None, full_name: str
-    ) -> Any:
+    ) -> APIResponse:
         """Сохранение юзера."""
         result = await self._handle_request(
             Method.POST,
@@ -115,7 +122,7 @@ class APIClient(object):
         )
         return result
 
-    async def get_user(self, user_id: int | None = None, user_name: str | None = None) -> Any:
+    async def get_user(self, user_id: int | None = None, user_name: str | None = None) -> APIResponse:
         """Получение информации о пользователе."""
         params = dict()
         if user_id is not None:
@@ -127,14 +134,14 @@ class APIClient(object):
         )
         return result
 
-    async def create_game(self, creator_id: int) -> Any:
+    async def create_game(self, creator_id: int) -> APIResponse:
         """Создание игровой партии."""
         result = await self._handle_request(
             Method.POST, f"/game", path_params={"creator_id": creator_id}
         )
         return result
 
-    async def add_user_to_game(self, game_code: str, user_id: int) -> Any:
+    async def add_user_to_game(self, game_code: str, user_id: int) -> APIResponse:
         """Добавление пользователя в партию."""
         result = await self._handle_request(
             Method.POST,
@@ -145,7 +152,7 @@ class APIClient(object):
 
     async def get_user_games(
             self, user_id: int, active: bool | None = None
-    ) -> Any:
+    ) -> APIResponse:
         """Получение манчкинов пользователя"""
         result = await self._handle_request(
             Method.GET,
@@ -154,31 +161,31 @@ class APIClient(object):
         )
         return result
 
-    async def get_active_user_game(self, user_id: int) -> Any:
+    async def get_active_user_game(self, user_id: int) -> APIResponse:
         result = await self._handle_request(
             Method.GET, f"/game", path_params={"user_id": user_id}
         )
         return result
 
-    async def delete_game(self, game_code: str) -> Any:
+    async def delete_game(self, game_code: str) -> APIResponse:
         result = await self._handle_request(
             Method.DELETE, f"/game/{game_code}"
         )
         return result
 
-    async def delete_user_from_game(self, game_code: str, user_id: int) -> Any:
+    async def delete_user_from_game(self, game_code: str, user_id: int) -> APIResponse:
         result = await self._handle_request(
             Method.DELETE, f"/game/{game_code}/munchkin", path_params={'user_id': user_id}
         )
         return result
 
-    async def get_munchkins(self, game_code: str) -> Any:
+    async def get_munchkins(self, game_code: str) -> APIResponse:
         result = await self._handle_request(
             Method.GET, f"/game/{game_code}/munchkin"
         )
         return result
 
-    async def ban_user(self, game_code: str, user_id: int) -> Any:
+    async def ban_user(self, game_code: str, user_id: int) -> APIResponse:
         result = await self._handle_request(
             Method.POST, f"/game/{game_code}/munchkin/ban", path_params={"user_id": user_id}
         )
