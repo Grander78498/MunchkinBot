@@ -1,9 +1,9 @@
 """Тестирование бота."""
 
-import sys
 import os
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 from unittest import IsolatedAsyncioTestCase, main as unittest_main
 from unittest.mock import AsyncMock, patch
 
@@ -60,7 +60,7 @@ class TestCommands(IsolatedAsyncioTestCase):
     @patch("tg_bot.main.api_client.save_user")
     @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
     async def test_cmd_start(
-        self, mock_answer: AsyncMock, mock_save_user: AsyncMock, _: AsyncMock
+            self, mock_answer: AsyncMock, mock_save_user: AsyncMock, _: AsyncMock
     ) -> None:
         """Тестирование команды /start."""
         msg = make_message("/start")
@@ -79,7 +79,7 @@ class TestCommands(IsolatedAsyncioTestCase):
     @patch("tg_bot.main.read_text", return_value="stub")
     @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
     async def test_cmd_rules(
-        self, mock_answer: AsyncMock, _: AsyncMock
+            self, mock_answer: AsyncMock, _: AsyncMock
     ) -> None:
         """Тестирование команды /rules."""
         msg = make_message("/rules")
@@ -92,7 +92,7 @@ class TestCommands(IsolatedAsyncioTestCase):
     @patch("tg_bot.main.read_text", return_value="stub")
     @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
     async def test_cmd_support(
-        self, mock_answer: AsyncMock, _: AsyncMock
+            self, mock_answer: AsyncMock, _: AsyncMock
     ) -> None:
         """Тестирование команды /support."""
         msg = make_message("/support")
@@ -102,7 +102,7 @@ class TestCommands(IsolatedAsyncioTestCase):
     @patch("tg_bot.main.read_text", return_value="stub")
     @patch("aiogram.types.Message.answer", new_callable=AsyncMock)
     async def test_cmd_donate(
-        self, mock_answer: AsyncMock, _: AsyncMock
+            self, mock_answer: AsyncMock, _: AsyncMock
     ) -> None:
         """Тестирование команды /donate."""
         msg = make_message("/donate")
@@ -122,7 +122,7 @@ class TestCommands(IsolatedAsyncioTestCase):
     @patch("tg_bot.main.get_exchange_rate", return_value=88.8)
     @patch("aiogram.types.Message.reply", new_callable=AsyncMock)
     async def test_cmd_get_exchange_rate(
-        self, mock_reply: AsyncMock, _: None
+            self, mock_reply: AsyncMock, _: None
     ) -> None:
         """Тестирование команды /get_daniel_trumps_most_transparent_policies."""
         msg = make_message("/get_daniel_trumps_most_transparent_policies")
@@ -144,7 +144,7 @@ class TestCommands(IsolatedAsyncioTestCase):
     @patch("aiogram.types.Message.reply", new_callable=AsyncMock)
     @patch("aiogram.types.CallbackQuery.answer", new_callable=AsyncMock)
     async def test_transparent_policies(
-        self, mock_answer: AsyncMock, mock_reply: AsyncMock, _: AsyncMock
+            self, mock_answer: AsyncMock, mock_reply: AsyncMock, _: AsyncMock
     ) -> None:
         """Тестирование кнопок с валютами."""
         msg = make_message()

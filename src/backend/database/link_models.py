@@ -1,8 +1,22 @@
 """Таблицы для связей многие-ко-многим."""
 
-from sqlmodel import Field
 from sqlalchemy import SmallInteger
+from sqlmodel import Field
+
 from backend.database import CustomSQLModel
+
+
+class BannedMunchkin(CustomSQLModel, table=True):
+    """Связь между манчкином и боем."""
+
+    game_id: int | None = Field(
+        default=None, primary_key=True, foreign_key="game.id",
+        ondelete="CASCADE"
+    )
+    user_id: int | None = Field(
+        default=None, primary_key=True, foreign_key="tg_user.tg_id",
+        ondelete="CASCADE"
+    )
 
 
 class MunchkinCombat(CustomSQLModel, table=True):

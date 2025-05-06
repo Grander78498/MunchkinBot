@@ -1,9 +1,9 @@
 """Главный файл для запуска бота."""
 
 import asyncio
-import sys
 import logging
 import os
+import sys
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher
@@ -25,7 +25,6 @@ try:
     from tg_bot.utils.api_client import APIClient
 except ImportError as e:
     raise ImportError("Ошибка при импорте внутренних модулей") from e
-
 
 current_path = Path().absolute()
 load_dotenv(current_path.parent.parent.joinpath(".env"), override=True)

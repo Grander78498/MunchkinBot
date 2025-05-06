@@ -1,9 +1,10 @@
 """Получение информации о действиях."""
 
 from fastapi import APIRouter
+
 from backend.database import AsyncGameSession
-from backend.utils.db_functions import get_action
 from backend.database.actions import Action
+from backend.utils.db_functions import get_action
 
 router = APIRouter(
     prefix="/action",

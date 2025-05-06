@@ -6,9 +6,9 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import IntegrityError
 
 from backend.database import AsyncGameSession
-from backend.utils.db_functions import get_user
-from backend.database.users import User
 from backend.database.responses import SuccessfulResponse
+from backend.database.users import User
+from backend.utils.db_functions import get_user
 
 router = APIRouter(
     prefix="/telegram",
@@ -31,9 +31,9 @@ async def save_user(user: User, session: AsyncGameSession) -> Any:
     return {"msg": "All good"}
 
 
-@router.get("/user/{user_id}")
-async def get_user_info(user_id: int, session: AsyncGameSession) -> User:
+@router.get("/user")
+async def get_user_info(session: AsyncGameSession, user_id: int | None = None, user_name: str | None = None) -> User:
     """Получение информации о пользователе."""
     async with session.begin():
-        user = await get_user(user_id, session)
+        user = await get_user(session, user_id=user_id, user_name=user_name)
         return user

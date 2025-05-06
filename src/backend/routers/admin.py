@@ -1,7 +1,8 @@
 """Управление карточками."""
 
-from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import IntegrityError
+
 from backend.database import AsyncGameSession
 from backend.database.cards import ItemCreate, Item, Card
 

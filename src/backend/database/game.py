@@ -2,11 +2,12 @@
 
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field
 from sqlalchemy import UniqueConstraint, SmallInteger, BigInteger
 from sqlalchemy.dialects.postgresql import ENUM
+from sqlmodel import Field
 
 from backend.database import CustomSQLModel, lazy_relationship
+from backend.database.enums import Gender, TurnType
 from backend.database.link_models import (
     MunchkinCard,
     MunchkinCombat,
@@ -14,8 +15,8 @@ from backend.database.link_models import (
     MonsterCombat,
     MunchkinStats,
     ActionMunchkin,
+    BannedMunchkin,
 )
-from backend.database.enums import Gender, TurnType
 
 if TYPE_CHECKING:
     from backend.database.actions import Action
@@ -33,8 +34,9 @@ class Game(CustomSQLModel, table=True):
     current_player_number: int = Field(default=-1)
 
     creator: "User" = lazy_relationship(back_populates="games")
-    munchkins: list["Munchkin"] = lazy_relationship(back_populates="game", cascade_delete=True)
     combats: list["Combat"] = lazy_relationship(back_populates="game")
+    munchkins: list["Munchkin"] = lazy_relationship(back_populates="game", cascade_delete=True)
+    banned_users: list["User"] = lazy_relationship(back_populates="banned_games", link_model=BannedMunchkin)
 
 
 class Munchkin(CustomSQLModel, table=True):

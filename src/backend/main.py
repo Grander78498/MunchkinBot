@@ -7,6 +7,7 @@
 from typing import Any
 
 from fastapi import FastAPI
+
 from backend.routers import game, telegram, admin, actions, conditions
 
 app = FastAPI()

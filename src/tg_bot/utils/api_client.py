@@ -1,9 +1,10 @@
 """Модуль для обращения к API."""
 
-from typing import Any
 from enum import Enum
-import requests
+from typing import Any
+
 import aiohttp
+import requests
 
 
 class Method(str, Enum):
@@ -41,11 +42,11 @@ class APIClient(object):
         await self.session.close()
 
     async def _handle_request(
-        self,
-        method: Method,
-        url: str,
-        path_params: dict[str, Any] | None = None,
-        body: dict[str, Any] | None = None,
+            self,
+            method: Method,
+            url: str,
+            path_params: dict[str, Any] | None = None,
+            body: dict[str, Any] | None = None,
     ) -> Any:
         """Отправка запроса с заданными параметрами.
 
@@ -74,7 +75,7 @@ class APIClient(object):
                 params = ""
 
             async with self.session.request(
-                method=method, url=url, params=params, json=body
+                    method=method, url=url, params=params, json=body
             ) as response:
                 # if path_params is None:
                 #     response = requests.request(
@@ -100,7 +101,7 @@ class APIClient(object):
             return {"ok": False, "detail": "API error"}
 
     async def save_user(
-        self, tg_id: int, user_name: str | None, full_name: str
+            self, tg_id: int, user_name: str | None, full_name: str
     ) -> Any:
         """Сохранение юзера."""
         result = await self._handle_request(
@@ -114,10 +115,15 @@ class APIClient(object):
         )
         return result
 
-    async def get_user(self, tg_id: int) -> Any:
+    async def get_user(self, user_id: int | None = None, user_name: str | None = None) -> Any:
         """Получение информации о пользователе."""
+        params = dict()
+        if user_id is not None:
+            params.update(user_id=user_id)
+        if user_name is not None:
+            params.update(user_name=user_name)
         result = await self._handle_request(
-            Method.GET, f"/telegram/user/{tg_id}"
+            Method.GET, f"/telegram/user", path_params=params
         )
         return result
 
@@ -138,7 +144,7 @@ class APIClient(object):
         return result
 
     async def get_user_games(
-        self, user_id: int, active: bool | None = None
+            self, user_id: int, active: bool | None = None
     ) -> Any:
         """Получение манчкинов пользователя"""
         result = await self._handle_request(
@@ -159,9 +165,21 @@ class APIClient(object):
             Method.DELETE, f"/game/{game_code}"
         )
         return result
-    
+
     async def delete_user_from_game(self, game_code: str, user_id: int) -> Any:
         result = await self._handle_request(
             Method.DELETE, f"/game/{game_code}/munchkin", path_params={'user_id': user_id}
+        )
+        return result
+
+    async def get_munchkins(self, game_code: str) -> Any:
+        result = await self._handle_request(
+            Method.GET, f"/game/{game_code}/munchkin"
+        )
+        return result
+
+    async def ban_user(self, game_code: str, user_id: int) -> Any:
+        result = await self._handle_request(
+            Method.POST, f"/game/{game_code}/munchkin/ban", path_params={"user_id": user_id}
         )
         return result

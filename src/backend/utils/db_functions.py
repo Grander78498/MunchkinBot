@@ -1,35 +1,43 @@
 """Часто используемые функции обращения к БД."""
 
-import string
 import secrets
-
+import string
 
 from fastapi import HTTPException
-from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
-from backend.database.users import User
-from backend.database.game import Game, Munchkin
 from backend.database.actions import Action
 from backend.database.conditions import Condition
+from backend.database.game import Game, Munchkin
+from backend.database.users import User
 from custom_exceptions.general import CodeGenerationException
 
 
-async def get_user(user_id: int, session: AsyncSession) -> User:
+async def get_user(session: AsyncSession, user_id: int | None = None, user_name: str | None = None) -> User:
     """Получение пользователя по tg_id.
 
     args:
         user_id: int - tg_id пользователя
+        user_name: str - краткое имя пользователя
     returns:
         User - информация о пользователе из БД
     raises:
         HTTPException - если пользователя нет в БД
     """
-    result = await session.execute(select(User).where(User.tg_id == user_id))
+    if user_id is not None:
+        result = await session.execute(select(User).where(User.tg_id == user_id))
+    elif user_name is not None:
+        result = await session.execute(select(User).where(User.user_name == user_name))
+    else:
+        raise HTTPException(
+            status_code=404, detail="Параметры сосали"
+        )
+
     user = result.scalar()
     if user is None:
         raise HTTPException(
-            status_code=404, detail="Пользователя с таким tg_id не существует"
+            status_code=404, detail="Пользователя с таким tg_id или user_name не существует"
         )
 
     return user
@@ -56,7 +64,7 @@ async def get_game(game_code: str, session: AsyncSession) -> Game:
 
 
 async def get_active_user_game(
-    user_id: int, session: AsyncSession
+        user_id: int, session: AsyncSession
 ) -> Game | None:
     result = await session.execute(
         select(Game)
@@ -110,7 +118,7 @@ async def get_condition(condition_id: int, session: AsyncSession) -> Condition:
 
 
 async def generate_game_code(
-    session: AsyncSession, length: int = 6, attempts: int = 100
+        session: AsyncSession, length: int = 6, attempts: int = 100
 ) -> str:
     """Генерация случайного кода игры."""
     alphabet = string.ascii_uppercase + string.digits

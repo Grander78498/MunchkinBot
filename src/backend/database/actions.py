@@ -2,8 +2,8 @@
 
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field
 from sqlalchemy import SmallInteger, Text
+from sqlmodel import Field
 
 from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.link_models import (

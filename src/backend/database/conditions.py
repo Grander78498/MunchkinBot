@@ -2,8 +2,8 @@
 
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field
 from sqlalchemy.dialects.postgresql import ENUM
+from sqlmodel import Field
 
 from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.enums import EqualType

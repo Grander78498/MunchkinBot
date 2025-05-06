@@ -1,19 +1,18 @@
 """Реализует обращения к базам данных."""
 
 import os
-
 from pathlib import Path
 from typing import Any, AsyncGenerator, Annotated
 
 from dotenv import load_dotenv
+from fastapi import Depends
+from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
     async_sessionmaker,
 )
-from sqlalchemy import MetaData
 from sqlmodel import SQLModel, Relationship
-from fastapi import Depends
 
 from custom_exceptions.general import EnvException
 

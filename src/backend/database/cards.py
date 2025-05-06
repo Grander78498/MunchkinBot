@@ -3,11 +3,12 @@
 from typing import TYPE_CHECKING, Optional
 
 from pydantic import field_validator
-from sqlmodel import Field
 from sqlalchemy import SmallInteger, Text
 from sqlalchemy.dialects.postgresql import ENUM
+from sqlmodel import Field
 
 from backend.database import CustomSQLModel, lazy_relationship
+from backend.database.enums import CardType, SourceType
 from backend.database.link_models import (
     MunchkinCard,
     MunchkinItem,
@@ -17,7 +18,6 @@ from backend.database.link_models import (
     ItemCondition,
     ActionMonster,
 )
-from backend.database.enums import CardType, SourceType
 
 if TYPE_CHECKING:
     from backend.database.game import Munchkin, Combat
