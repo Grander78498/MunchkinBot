@@ -3,8 +3,20 @@ name: CI
 on: [push]
 
 jobs:
+  localization:
+    name: Localization check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Localization test
+        run: |
+          if [ ! -f "src/tg_bot/docs.json" ]; then
+            echo "Локализация не найдена"
+            exit 1
+          fi
   install-project:
     name: Install the project
+    needs: localization
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +85,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if ls src/tests/test_*.py 1> /dev/null 2>&1; then
-            uv run mutmut run --paths-to-mutate=$(git ls-files '*.py')
+            uv run mutmut run --paths-to-mutate $(git ls-files '*.py')
             uv run mutmut results
           else
             echo "No test files found in src/tests. Skipping tests."
@@ -145,7 +157,7 @@ jobs:
       - name: Security lint with bandit
         run: |
           uv run bandit -r $(git ls-files '*.py')
-
+          
   spelling:
     name: Spelling
     needs: install-project
