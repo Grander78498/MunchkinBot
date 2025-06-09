@@ -32,7 +32,11 @@ async def save_user(user: User, session: AsyncGameSession) -> Any:
 
 
 @router.get("/user")
-async def get_user_info(session: AsyncGameSession, user_id: int | None = None, user_name: str | None = None) -> User:
+async def get_user_info(
+    session: AsyncGameSession,
+    user_id: int | None = None,
+    user_name: str | None = None,
+) -> User:
     """Получение информации о пользователе."""
     async with session.begin():
         user = await get_user(session, user_id=user_id, user_name=user_name)

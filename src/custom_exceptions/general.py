@@ -7,3 +7,7 @@ class EnvException(Exception):
 
 class CodeGenerationException(RecursionError):
     """Исключение на случай неостанавливающейся генерации кода игры."""
+
+
+class WrongNoneParameterException(Exception):
+    """Исключение на случай одновременно переданных None параметров."""

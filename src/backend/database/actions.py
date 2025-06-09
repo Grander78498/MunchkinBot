@@ -34,22 +34,14 @@ class Action(ActionBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
 
-    stats_change: Optional["StatsChange"] = lazy_relationship(
-        back_populates="action"
-    )
-    creature_update: Optional["CreatureUpdate"] = lazy_relationship(
-        back_populates="action"
-    )
-    cards_transfer: Optional["CardsTransfer"] = lazy_relationship(
-        back_populates="action"
-    )
+    stats_change: Optional["StatsChange"] = lazy_relationship(back_populates="action")
+    creature_update: Optional["CreatureUpdate"] = lazy_relationship(back_populates="action")
+    cards_transfer: Optional["CardsTransfer"] = lazy_relationship(back_populates="action")
 
     conditions: list["Condition"] = lazy_relationship(
         back_populates="actions", link_model=ActionCondition
     )
-    cards: list["Card"] = lazy_relationship(
-        back_populates="actions", link_model=CardAction
-    )
+    cards: list["Card"] = lazy_relationship(back_populates="actions", link_model=CardAction)
     munchkins: list["Munchkin"] = lazy_relationship(
         back_populates="actions", link_model=ActionMunchkin
     )

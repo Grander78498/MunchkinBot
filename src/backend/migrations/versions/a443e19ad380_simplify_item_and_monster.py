@@ -36,14 +36,10 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("card_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["card_id"], ["card.id"], name=op.f("fk_monster_card_id_card")
-        ),
+        sa.ForeignKeyConstraint(["card_id"], ["card.id"], name=op.f("fk_monster_card_id_card")),
         sa.PrimaryKeyConstraint("card_id", name=op.f("pk_monster")),
     )
-    op.alter_column(
-        "card", "description", existing_type=sa.TEXT(), nullable=False
-    )
+    op.alter_column("card", "description", existing_type=sa.TEXT(), nullable=False)
     op.drop_constraint("uq_gamecard_image_path", "gamecard", type_="unique")
     op.drop_constraint("uq_gamecard_name", "gamecard", type_="unique")
     op.drop_column("gamecard", "description")
@@ -91,18 +87,14 @@ def downgrade() -> None:
         "item",
         sa.Column(
             "card_type",
-            postgresql.ENUM(
-                "DOOR", "TREASURE", name="cardtype", create_type=False
-            ),
+            postgresql.ENUM("DOOR", "TREASURE", name="cardtype", create_type=False),
             autoincrement=False,
             nullable=False,
         ),
     )
     op.add_column(
         "item",
-        sa.Column(
-            "name", sa.VARCHAR(length=64), autoincrement=False, nullable=False
-        ),
+        sa.Column("name", sa.VARCHAR(length=64), autoincrement=False, nullable=False),
     )
     op.add_column(
         "item",
@@ -113,9 +105,7 @@ def downgrade() -> None:
     op.create_unique_constraint("uq_item_description", "item", ["description"])
     op.add_column(
         "gameitem",
-        sa.Column(
-            "name", sa.VARCHAR(length=64), autoincrement=False, nullable=False
-        ),
+        sa.Column("name", sa.VARCHAR(length=64), autoincrement=False, nullable=False),
     )
     op.add_column(
         "gameitem",
@@ -125,18 +115,14 @@ def downgrade() -> None:
         "gameitem",
         sa.Column(
             "card_type",
-            postgresql.ENUM(
-                "DOOR", "TREASURE", name="cardtype", create_type=False
-            ),
+            postgresql.ENUM("DOOR", "TREASURE", name="cardtype", create_type=False),
             autoincrement=False,
             nullable=False,
         ),
     )
     op.add_column(
         "gameitem",
-        sa.Column(
-            "runway_bonus", sa.SMALLINT(), autoincrement=False, nullable=True
-        ),
+        sa.Column("runway_bonus", sa.SMALLINT(), autoincrement=False, nullable=True),
     )
     op.add_column(
         "gameitem",
@@ -148,12 +134,8 @@ def downgrade() -> None:
         ),
     )
     op.create_unique_constraint("uq_gameitem_name", "gameitem", ["name"])
-    op.create_unique_constraint(
-        "uq_gameitem_image_path", "gameitem", ["image_path"]
-    )
-    op.create_unique_constraint(
-        "uq_gameitem_description", "gameitem", ["description"]
-    )
+    op.create_unique_constraint("uq_gameitem_image_path", "gameitem", ["image_path"])
+    op.create_unique_constraint("uq_gameitem_description", "gameitem", ["description"])
     op.alter_column(
         "gameitem",
         "runaway_bonus",
@@ -174,32 +156,22 @@ def downgrade() -> None:
         "gamecard",
         sa.Column(
             "card_type",
-            postgresql.ENUM(
-                "DOOR", "TREASURE", name="cardtype", create_type=False
-            ),
+            postgresql.ENUM("DOOR", "TREASURE", name="cardtype", create_type=False),
             autoincrement=False,
             nullable=False,
         ),
     )
     op.add_column(
         "gamecard",
-        sa.Column(
-            "name", sa.VARCHAR(length=64), autoincrement=False, nullable=False
-        ),
+        sa.Column("name", sa.VARCHAR(length=64), autoincrement=False, nullable=False),
     )
     op.add_column(
         "gamecard",
-        sa.Column(
-            "description", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
+        sa.Column("description", sa.VARCHAR(), autoincrement=False, nullable=False),
     )
     op.create_unique_constraint("uq_gamecard_name", "gamecard", ["name"])
-    op.create_unique_constraint(
-        "uq_gamecard_image_path", "gamecard", ["image_path"]
-    )
-    op.alter_column(
-        "card", "description", existing_type=sa.TEXT(), nullable=True
-    )
+    op.create_unique_constraint("uq_gamecard_image_path", "gamecard", ["image_path"])
+    op.alter_column("card", "description", existing_type=sa.TEXT(), nullable=True)
     op.drop_table("monster")
     sa.Enum("UNDEAD", name="monstertype").drop(op.get_bind())
     # ### end Alembic commands ###

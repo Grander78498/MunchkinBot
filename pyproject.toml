@@ -57,3 +57,6 @@ module = [
     "src.backend",
     "src.tg_bot",
 ]
+
+[tool.black]
+line-length=100

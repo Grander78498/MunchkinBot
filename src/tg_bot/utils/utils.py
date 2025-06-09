@@ -1,3 +1,5 @@
+"""Просто функции."""
+
 import json
 
 from tg_bot.utils.enums import Language
@@ -6,7 +8,7 @@ from tg_bot.utils.enums import Language
 def read_text(key: str, lang: Language) -> str:
     """Считывание текстовой информации из json.
 
-    Args:
+    Параметры:
         key (str) - ключ
         lang (str) - язык пользователя
     """

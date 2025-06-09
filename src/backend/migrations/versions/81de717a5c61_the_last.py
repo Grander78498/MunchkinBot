@@ -36,9 +36,7 @@ def upgrade() -> None:
             ["monster.card_id"],
             name=op.f("fk_actionmonster_monster_id_monster"),
         ),
-        sa.PrimaryKeyConstraint(
-            "action_id", "monster_id", name=op.f("pk_actionmonster")
-        ),
+        sa.PrimaryKeyConstraint("action_id", "monster_id", name=op.f("pk_actionmonster")),
     )
     # ### end Alembic commands ###
 

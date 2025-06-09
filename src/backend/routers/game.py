@@ -1,4 +1,5 @@
 """Получение информации о манчкине."""
+
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -38,9 +39,7 @@ async def create_game(creator_id: int, session: AsyncGameSession) -> Game:
 
 
 @router.get("")
-async def get_active_game(
-        user_id: int, session: AsyncGameSession
-) -> Game | None:
+async def get_active_game(user_id: int, session: AsyncGameSession) -> Game | None:
     """Создание игровой партии пользователем."""
     async with session.begin():
         game = await get_active_user_game(user_id, session)
@@ -49,16 +48,11 @@ async def get_active_game(
 
 @router.get("/munchkin")
 async def get_user_munchkins(
-        user_id: int, session: AsyncGameSession, active: bool | None = None
+    user_id: int, session: AsyncGameSession, active: bool | None = None
 ) -> list[Munchkin]:
     """Получение манчкинов, созданных пользователем."""
     async with session.begin():
-        stmt = (
-            select(User)
-            .where(User.tg_id == user_id)
-            .join(Munchkin, Munchkin.user_id == User.tg_id)
-            .join(Game, Game.id == Munchkin.game_id)
-        )
+        stmt = select(User).where(User.tg_id == user_id).join(Munchkin).join(Game)
         if active is not None:
             stmt = stmt.where(Game.on_going == active)
         result = await session.execute(stmt)
@@ -68,15 +62,14 @@ async def get_user_munchkins(
                 status_code=404,
                 detail="Такого пользователя не существует",
             )
-        elif user is None:
+
+        if user is None:
             return []
         return user.munchkins
 
 
 @router.post("/{game_code}/munchkin")
-async def create_munchkin(
-        game_code: str, user_id: int, session: AsyncGameSession
-) -> Munchkin:
+async def create_munchkin(game_code: str, user_id: int, session: AsyncGameSession) -> Munchkin:
     """Создание манчкина."""
     try:
         async with session.begin():
@@ -107,9 +100,7 @@ async def create_munchkin(
 
 
 @router.get("/{game_code}/munchkin")
-async def get_game_munchkins(
-        game_code: str, session: AsyncGameSession
-) -> list[User]:
+async def get_game_munchkins(game_code: str, session: AsyncGameSession) -> list[User]:
     """Получение манкчинов в игре."""
     async with session.begin():
         game = await get_game(game_code, session)
@@ -118,27 +109,29 @@ async def get_game_munchkins(
 
 @router.delete("/{game_code}")
 async def delete_game(game_code: str, session: AsyncGameSession) -> list[Munchkin]:
+    """Удаление игры."""
     async with session.begin():
-        result = await session.execute(select(Game).join(Munchkin).where(Game.code == game_code, Game.creator_id != Munchkin.user_id))
-        game = result.scalar()
-        munchkins = game.munchkins
+        game = await get_game(game_code, session)
+        munchkins = [munchkin for munchkin in game.munchkins if munchkin.user_id != game.creator_id]
         await session.delete(game)
         return munchkins
 
 
 @router.delete("/{game_code}/munchkin", response_model=SuccessfulResponse)
 async def delete_user_from_game(game_code: str, user_id: int, session: AsyncGameSession) -> Any:
+    """Удаление пользователя из игры."""
     async with session.begin():
         result = await session.execute(
-            select(Munchkin).join(Game, Game.id == Munchkin.game_id).where(Munchkin.user_id == user_id,
-                                                                           Game.code == game_code))
+            select(Munchkin).join(Game).where(Munchkin.user_id == user_id, Game.code == game_code)
+        )
         munchkin = result.scalar()
         await session.delete(munchkin)
-        return {'msg': 'Удалено'}
+        return {"msg": "Удалено"}
 
 
 @router.post("/{game_code}/munchkin/ban", response_model=SuccessfulResponse)
 async def ban_munchkin(game_code: str, user_id: int, session: AsyncGameSession) -> Any:
+    """Бан манчкина."""
     async with session.begin():
         game = await get_game(game_code, session)
         user = await get_user(session, user_id=user_id)
@@ -147,8 +140,8 @@ async def ban_munchkin(game_code: str, user_id: int, session: AsyncGameSession) 
         session.add(user)
 
         result = await session.execute(
-            select(Munchkin).join(Game, Game.id == Munchkin.game_id).where(Munchkin.user_id == user_id,
-                                                                           Game.code == game_code))
+            select(Munchkin).join(Game).where(Munchkin.user_id == user_id, Game.code == game_code)
+        )
         munchkin = result.scalar()
         await session.delete(munchkin)
-        return {'msg': 'Забанен'}
+        return {"msg": "Забанен"}

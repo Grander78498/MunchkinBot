@@ -36,7 +36,9 @@ class Game(CustomSQLModel, table=True):
     creator: "User" = lazy_relationship(back_populates="games")
     combats: list["Combat"] = lazy_relationship(back_populates="game")
     munchkins: list["Munchkin"] = lazy_relationship(back_populates="game", cascade_delete=True)
-    banned_users: list["User"] = lazy_relationship(back_populates="banned_games", link_model=BannedMunchkin)
+    banned_users: list["User"] = lazy_relationship(
+        back_populates="banned_games", link_model=BannedMunchkin
+    )
 
 
 class Munchkin(CustomSQLModel, table=True):
@@ -49,9 +51,7 @@ class Munchkin(CustomSQLModel, table=True):
     user_id: int = Field(foreign_key="tg_user.tg_id", sa_type=BigInteger, ondelete="CASCADE")
     game_id: int = Field(foreign_key="game.id", ondelete="CASCADE")
 
-    gender: Gender = Field(
-        default=Gender.MALE, sa_type=ENUM(Gender)
-    )  # type: ignore[call-overload]
+    gender: Gender = Field(default=Gender.MALE, sa_type=ENUM(Gender))  # type: ignore[call-overload]
     number: int = Field(default=-1, sa_type=SmallInteger)
     level: int = Field(default=1, sa_type=SmallInteger)
     strength: int = Field(default=1, sa_type=SmallInteger)
@@ -65,15 +65,9 @@ class Munchkin(CustomSQLModel, table=True):
     combats: list["Combat"] = lazy_relationship(
         back_populates="munchkins", link_model=MunchkinCombat
     )
-    cards: list["GameCard"] = lazy_relationship(
-        back_populates="munchkins", link_model=MunchkinCard
-    )
-    items: list["GameItem"] = lazy_relationship(
-        back_populates="munchkins", link_model=MunchkinItem
-    )
-    stats: list["Stats"] = lazy_relationship(
-        back_populates="munchkins", link_model=MunchkinStats
-    )
+    cards: list["GameCard"] = lazy_relationship(back_populates="munchkins", link_model=MunchkinCard)
+    items: list["GameItem"] = lazy_relationship(back_populates="munchkins", link_model=MunchkinItem)
+    stats: list["Stats"] = lazy_relationship(back_populates="munchkins", link_model=MunchkinStats)
     actions: list["Action"] = lazy_relationship(
         back_populates="munchkins", link_model=ActionMunchkin
     )

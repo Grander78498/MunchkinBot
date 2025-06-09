@@ -53,9 +53,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 def lazy_relationship(*args, **kwargs) -> Any:  # type: ignore [no-untyped-def]
     """Relationship, который легче использовать в асинхронных запросах."""
-    return Relationship(
-        *args, sa_relationship_kwargs={"lazy": "selectin"}, **kwargs
-    )
+    return Relationship(*args, sa_relationship_kwargs={"lazy": "selectin"}, **kwargs)
 
 
 AsyncGameSession = Annotated[AsyncSession, Depends(get_session)]

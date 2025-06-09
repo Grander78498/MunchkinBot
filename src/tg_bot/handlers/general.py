@@ -1,12 +1,13 @@
-"""Основной файл рычагов."""
+"""Основной файл обработчиков событий."""
 
-from aiogram import Bot, Dispatcher, Router, F
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.formatting import as_list, Text, Code, Bold
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from integrations import get_exchange_rate, Currencies
+from custom_exceptions.bot import TGException
 from tg_bot.messages import start_message, room_message, members_message
 from tg_bot.states import GeneralState
 from tg_bot.utils.api_client import APIClient
@@ -18,7 +19,7 @@ router = Router(name="general")
 
 
 @router.message(F.text == KeyBoards.RETURN)
-async def return_handler(message: Message, state: FSMContext):
+async def return_handler(message: Message, state: FSMContext) -> None:
     """Обработка возвращения."""
     previous_state = (await state.get_data()).get("previous_state")
     await state.set_state(previous_state)
@@ -32,36 +33,29 @@ async def return_handler(message: Message, state: FSMContext):
 
 
 @router.message(GeneralState.START, F.text == KeyBoards.CREATE_ROOM)
-async def create_room(message: Message, state: FSMContext):
+async def create_room(message: Message, state: FSMContext) -> None:
     """Создание комнаты."""
-
+    if message.from_user is None:
+        raise TGException("Пользователь не пользователь")
     response = await api_client.create_game(message.from_user.id)
     await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.ACTIVE_ROOM)
-    if not response.ok:
+    if response.detail:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
-        await message.answer(
-            text=response.detail, reply_markup=builder.as_markup()
-        )
+        await message.answer(text=response.detail, reply_markup=builder.as_markup())
         return
     game = response.result
     text = as_list(
-        Text(
-            "Игровая партия создана с кодом приглашения: ", Code(game["code"])
-        ),
-        Text(
-            "Чтобы другие манчкины могли присоединиться к партии, пришлите им этот код!"
-        ),
+        Text("Игровая партия создана с кодом приглашения: ", Code(game["code"])),
+        Text("Чтобы другие манчкины могли присоединиться к партии, пришлите им этот код!"),
     )
-    await state.update_data(
-        game_code=game["code"], creator_id=game["creator_id"]
-    )
+    await state.update_data(game_code=game["code"], creator_id=game["creator_id"])
     await room_message(message, state, text=text)
 
 
 @router.message(GeneralState.START, F.text == KeyBoards.ACTIVE_ROOM)
-async def active_room(message: Message, state: FSMContext):
+async def active_room(message: Message, state: FSMContext) -> None:
     """Заход в активную комнату."""
     await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.ACTIVE_ROOM)
@@ -69,30 +63,30 @@ async def active_room(message: Message, state: FSMContext):
 
 
 @router.message(GeneralState.START, F.text == KeyBoards.JOIN_GAME)
-async def join_game(message: Message, state: FSMContext):
+async def join_game(message: Message, state: FSMContext) -> None:
     """Присоединение к игре."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
 
     await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.JOIN_GAME)
-    await message.answer(
-        "Введите код приглашения", reply_markup=builder.as_markup()
-    )
+    await message.answer("Введите код приглашения", reply_markup=builder.as_markup())
 
 
 @router.message(GeneralState.JOIN_GAME, F.text)
-async def entered_invite_code(message: Message, state: FSMContext):
+async def entered_invite_code(message: Message, state: FSMContext) -> None:
     """Обработка ввода кода приглашения."""
+    if message.from_user is None:
+        raise TGException("Пользователь не пользователь")
     response = await api_client.add_user_to_game(
-        message.text, message.from_user.id
+        message.text, message.from_user.id  # type: ignore[arg-type]
     )
-    if not response.ok:
+    # здесь ТОЧНО не может быть message.text is None из-за фильтра
+
+    if response.detail:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
-        await message.answer(
-            response.detail, reply_markup=builder.as_markup()
-        )
+        await message.answer(response.detail, reply_markup=builder.as_markup())
         return
 
     await state.update_data(previous_state=GeneralState.START)
@@ -105,7 +99,7 @@ async def entered_invite_code(message: Message, state: FSMContext):
 
 
 @router.message(GeneralState.JOIN_GAME)
-async def entered_incorrect_invite_code(message: Message):
+async def entered_incorrect_invite_code(message: Message) -> None:
     """Обработка ввода кода приглашения, если прислали не текст."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
@@ -116,7 +110,7 @@ async def entered_incorrect_invite_code(message: Message):
 
 
 @router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.START_GAME)
-async def start_game(message: Message, state: FSMContext):
+async def start_game(message: Message, state: FSMContext) -> None:
     """Начало игры."""
     # TODO: добавить здесь проверку, что пользователь является создателем
     builder = ReplyKeyboardBuilder()
@@ -127,121 +121,123 @@ async def start_game(message: Message, state: FSMContext):
 
     await state.update_data(previous_state=await state.get_state())
     await state.set_state(GeneralState.START_GAME)
-    await message.answer(
-        text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup()
-    )
+    await message.answer(text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["ход текущего игрока"]))
-async def current_player_move(message: Message):
+async def current_player_move(message: Message) -> None:
     """Ход игрока (текущего игрока)."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CHECK_CARDS)
     builder.button(text=KeyBoards.OPEN_DOOR)
     builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(2)
-    await message.answer(
-        text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup()
-    )
+    await message.answer(text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["чужой ход игрока"]))
-async def churka_player_move(message: Message):
+async def churka_player_move(message: Message) -> None:
     """Ход игрока (не текущего)."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CHECK_CARDS)
     builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(2)
-    await message.answer(
-        text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup()
-    )
+    await message.answer(text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["бой текущего игрока"]))
-async def player_battle(message: Message):
+async def player_battle(message: Message) -> None:
     """бой игрока (после открытия двери и там монстр)."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CHECK_CARDS)
     builder.button(text=KeyBoards.REQUEST_HELP)
     builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(2)
-    await message.answer(
-        text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup()
-    )
+    await message.answer(text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["победа игрока"]))
-async def player_win(message: Message):
+async def player_win(message: Message) -> None:
     """Победа игрока над монстром."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.TAKE_TREASURE)  # Или распределить сокровища
     builder.adjust(1)
-    await message.answer(
-        text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup()
-    )
+    await message.answer(text="START_GAME_PLACEHOLDER", reply_markup=builder.as_markup())
 
 
 @router.message(F.text.lower().in_(["сосание игрока"]))
-async def player_lose(message: Message):
+async def player_lose(message: Message) -> None:
     """Игрок сосал."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.LOSE)
     builder.button(text=KeyBoards.CHECK_CARDS)
     builder.button(text=KeyBoards.INVENTORY)
     builder.adjust(1)
-    await message.answer(
-        text="PLAYER_SUCKING_PLACEHOLDER", reply_markup=builder.as_markup()
-    )
+    await message.answer(text="PLAYER_SUCKING_PLACEHOLDER", reply_markup=builder.as_markup())
 
 
-@router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.DELETE_PARTY)
-async def delete_party(message: Message, state: FSMContext, bot: Bot):
+@router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.DELETE_GAME)
+async def delete_game_session(message: Message, state: FSMContext) -> None:
+    """Удаление игровой сессии."""
     data = await state.get_data()
-    response = await api_client.delete_game(data['game_code'])
-    if not response.ok:
+    response = await api_client.delete_game(data["game_code"])
+    if response.detail:
         await message.answer(text=response.detail)
     else:
-        user_id_list = [x['user_id'] for x in response.result if x['user_id'] != message.from_user.id]
+        if message.from_user is None:
+            raise TGException("Пользователь не пользователь")
+
+        user_id_list = [
+            x["user_id"] for x in response.result_list if x["user_id"] != message.from_user.id
+        ]
         for user_id in user_id_list:
-            await deleted_from_game(bot, user_id)
-        await message.answer(text='Игра успешно удалена')
+            await deleted_from_game(user_id)
+        await message.answer(text="Игра успешно удалена")
     await start_message(state, message=message)
 
 
-@router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.LEAVE_PARTY)
-async def leave_party(message: Message, state: FSMContext):
+@router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.LEAVE_GAME)
+async def leave_game(message: Message, state: FSMContext) -> None:
+    """Покидание игры."""
     data = await state.get_data()
-    response = await api_client.delete_user_from_game(data['game_code'], message.from_user.id)
-    if not response.ok:
+    if message.from_user is None:
+        raise TGException("Пользователь не пользователь")
+    response = await api_client.delete_user_from_game(data["game_code"], message.from_user.id)
+    if response.detail:
         await message.answer(text=response.detail)
     else:
-        await message.answer(text='Вы успешно вышли из игры!')
+        await message.answer(text="Вы успешно вышли из игры!")
     await start_message(state, message=message)
 
 
 @router.message(GeneralState.ACTIVE_ROOM, F.text == KeyBoards.MEMBERS)
-async def look_members(message: Message, state: FSMContext):
+async def look_members(message: Message, state: FSMContext) -> None:
+    """Просмотр игроков в сессии."""
     await members_message(message, state)
 
 
 @router.message(GeneralState.MEMBERS, F.text == KeyBoards.MEMBER_INFO)
-async def enter_user_name_for_info(message: Message, state: FSMContext):
+async def enter_user_name_for_info(message: Message, state: FSMContext) -> None:
+    """Предложение ввести имя просматриваемого пользователя."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
     await state.update_data(previous_state=GeneralState.MEMBERS)
     await state.set_state(GeneralState.ENTER_MEMBER_USER_NAME)
-    await message.answer("Введите ник пользователя (указан в скобках в сообщении выше)",
-                         reply_markup=builder.as_markup())
+    await message.answer(
+        "Введите ник пользователя (указан в скобках в сообщении выше)",
+        reply_markup=builder.as_markup(),
+    )
 
 
 @router.message(GeneralState.ENTER_MEMBER_USER_NAME, F.text)
-async def username_entered(message: Message, state: FSMContext):
+async def username_entered(message: Message, state: FSMContext) -> None:
+    """Обработка введённого имени."""
     user_name = message.text
     response = await api_client.get_user(user_name=user_name)
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
-    if not response.ok:
-        await message.answer(response['detail'])
+    if response.detail:
+        await message.answer(response.detail)
         await message.answer("Повторите ввод", reply_markup=builder.as_markup())
         return
     builder.button(text=KeyBoards.BAN_MEMBER)
@@ -249,39 +245,45 @@ async def username_entered(message: Message, state: FSMContext):
 
     text = Text(
         "Выбран пользователь: ",
-        Bold(user['full_name']),
+        Bold(user["full_name"]),
         " (",
-        Code(user['user_name']),
-        ")"
+        Code(user["user_name"]),
+        ")",
     )
-    await state.update_data(user_id=user['tg_id'])
+    await state.update_data(user_id=user["tg_id"])
     await state.set_state(GeneralState.MEMBER_INFO)
-    await message.answer(**text.as_kwargs(),
-                         reply_markup=builder.as_markup())
+    await message.answer(**text.as_kwargs(), reply_markup=builder.as_markup())
 
 
 @router.message(GeneralState.MEMBER_INFO, F.text == KeyBoards.BAN_MEMBER)
-async def ban_handler(message: Message, state: FSMContext, bot: Bot):
+async def ban_handler(message: Message, state: FSMContext) -> None:
+    """Бан пользователя."""
     data = await state.get_data()
-    response = await api_client.ban_user(data['game_code'], data['user_id'])
+    response = await api_client.ban_user(data["game_code"], data["user_id"])
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
-    if not response.ok:
+    if response.detail:
         await message.answer(response.detail)
     else:
-        await deleted_from_game(bot, data['user_id'])
-        await message.answer(response.result['msg'])
+        await deleted_from_game(data["user_id"])
+        await message.answer(response.result["msg"])
 
     await members_message(message, state)
 
 
 @router.message(GeneralState.MEMBER_INFO)
-async def username_entered_wrong(message: Message, state: FSMContext):
-    await room_message(message, state, text=Text("Мадагаскарская птица не может быть ником пользователя"))
+async def username_entered_wrong(message: Message, state: FSMContext) -> None:
+    """Обработка неверного ввода имени пользователя."""
+    await room_message(
+        message,
+        state,
+        text=Text("Мадагаскарская птица не может быть ником пользователя"),
+    )
 
 
 @router.message(GeneralState.START, F.text == KeyBoards.PERSONAL_ACCOUNT)
-async def personal_account(message: Message, state: FSMContext):
+async def personal_account(message: Message, state: FSMContext) -> None:
+    """Личный кабинет пользователя."""
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.CHECK_STATISTIC)
     builder.button(text=KeyBoards.DONATE)
@@ -290,9 +292,7 @@ async def personal_account(message: Message, state: FSMContext):
 
     await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.PERSONAL_ACCOUNT)
-    await message.answer(
-        text=KeyBoards.PERSONAL_ACCOUNT, reply_markup=builder.as_markup()
-    )
+    await message.answer(text=KeyBoards.PERSONAL_ACCOUNT, reply_markup=builder.as_markup())
 
 
 @router.message(
@@ -307,31 +307,21 @@ async def personal_account(message: Message, state: FSMContext):
         ]
     )
 )
-async def transparent_policies_v2(message: Message):
-    # if message is None:
-    #     await message.answer("Произошла ошибка при отправке курса")
-    #     return
-    match message.text.lower():
+async def transparent_policies_v2(message: Message) -> None:
+    """Получение самых актуальных политик."""
+    match message.text.lower():  # type: ignore[union-attr]
         case "трамп":
-            await message.reply(
-                f"Курс доллара равен {get_exchange_rate(Currencies.USD)} ₽"
-            )
+            await message.reply(f"Курс доллара равен {get_exchange_rate(Currencies.USD)} ₽")
         case "евро":
-            await message.reply(
-                f"Курс евро равен {get_exchange_rate(Currencies.EUR)} ₽"
-            )
+            await message.reply(f"Курс евро равен {get_exchange_rate(Currencies.EUR)} ₽")
         case "нефритовый стержень":
-            await message.reply(
-                f"Курс юаня равен {get_exchange_rate(Currencies.CNY)} ₽"
-            )
+            await message.reply(f"Курс юаня равен {get_exchange_rate(Currencies.CNY)} ₽")
         case "бульба":
             await message.reply(
                 f"Курс белорусского рубля равен {get_exchange_rate(Currencies.BYN)} ₽"
             )
         case "дирхам оаэ":
-            await message.reply(
-                f"Курс дирхама ОАЭ равен {get_exchange_rate(Currencies.AED)} ₽"
-            )
+            await message.reply(f"Курс дирхама ОАЭ равен {get_exchange_rate(Currencies.AED)} ₽")
         case "сингапур":
             await message.reply(
                 f"Курс сингапурского доллара равен {get_exchange_rate(Currencies.SGD)} ₽"

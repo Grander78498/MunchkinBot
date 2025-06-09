@@ -1,24 +1,33 @@
+"""Хранение бота и диспетчера."""
+
+import os
+from pathlib import Path
+from functools import lru_cache
+
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-
-class Settings():
-    def __new__(cls, **kwargs):
-        if not hasattr(cls, "instance"):
-            cls.instance = super(Settings, cls).__new__(cls, **kwargs)
-        return cls.instance
-    
-    def __init__(self, bot: Bot | None = None, dp: Dispatcher | None = None):
-        self.bot = bot
-        self.dp = dp
+from custom_exceptions.general import EnvException
 
 
-def get_settings(token: str | None = None) ->  Settings:
-    settings = Settings()
-    if settings.bot is None and token is not None:
-        settings.bot = Bot(
-            token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-        )
-        settings.dp = Dispatcher()
-    return settings
+current_path = Path().absolute()
+load_dotenv(current_path.parent.parent.joinpath(".env"), override=True)
+
+token = os.getenv("BOT_TOKEN")
+if token is None:
+
+    raise EnvException("Отсутствует переменная среды BOT_TOKEN")
+
+
+@lru_cache
+def get_bot() -> Bot:
+    """Получение объекта бота."""
+    return Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+
+
+@lru_cache
+def get_dispatcher() -> Dispatcher:
+    """Получение объекта диспетчера."""
+    return Dispatcher()

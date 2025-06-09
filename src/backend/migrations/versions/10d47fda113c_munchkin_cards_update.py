@@ -29,9 +29,7 @@ def upgrade() -> None:
     op.drop_column("item", "item_type")
     op.drop_column("monster", "monster_type")
     sa.Enum("FLAME", "WOODEN", "STICK", name="itemproperty").drop(op.get_bind())
-    sa.Enum("HEADGEAR", "ARMOR", "FOOTGEAR", "HAND", name="itemtype").drop(
-        op.get_bind()
-    )
+    sa.Enum("HEADGEAR", "ARMOR", "FOOTGEAR", "HAND", name="itemtype").drop(op.get_bind())
     sa.Enum("UNDEAD", name="monstertype").drop(op.get_bind())
     op.create_table(
         "itemproperty",
@@ -81,9 +79,7 @@ def upgrade() -> None:
         sa.Column("reward_level_count", sa.Integer(), nullable=False),
         sa.Column("monster_type_id", sa.Integer(), nullable=True),
         sa.Column("card_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["card_id"], ["card.id"], name=op.f("fk_stats_card_id_card")
-        ),
+        sa.ForeignKeyConstraint(["card_id"], ["card.id"], name=op.f("fk_stats_card_id_card")),
         sa.ForeignKeyConstraint(
             ["monster_type_id"],
             ["monstertype.id"],
@@ -108,9 +104,7 @@ def upgrade() -> None:
             ["monster.card_id"],
             name=op.f("fk_monstercombat_monster_id_monster"),
         ),
-        sa.PrimaryKeyConstraint(
-            "monster_id", "combat_id", name=op.f("pk_monstercombat")
-        ),
+        sa.PrimaryKeyConstraint("monster_id", "combat_id", name=op.f("pk_monstercombat")),
     )
     op.create_table(
         "munchkinstats",
@@ -126,16 +120,10 @@ def upgrade() -> None:
             ["stats.card_id"],
             name=op.f("fk_munchkinstats_stats_id_stats"),
         ),
-        sa.PrimaryKeyConstraint(
-            "munchkin_id", "stats_id", name=op.f("pk_munchkinstats")
-        ),
+        sa.PrimaryKeyConstraint("munchkin_id", "stats_id", name=op.f("pk_munchkinstats")),
     )
-    op.add_column(
-        "gameitem", sa.Column("item_type_id", sa.Integer(), nullable=True)
-    )
-    op.add_column(
-        "gameitem", sa.Column("item_property_id", sa.Integer(), nullable=True)
-    )
+    op.add_column("gameitem", sa.Column("item_type_id", sa.Integer(), nullable=True))
+    op.add_column("gameitem", sa.Column("item_property_id", sa.Integer(), nullable=True))
     op.create_foreign_key(
         op.f("fk_gameitem_item_property_id_itemproperty"),
         "gameitem",
@@ -150,9 +138,7 @@ def upgrade() -> None:
         ["item_type_id"],
         ["id"],
     )
-    op.add_column(
-        "item", sa.Column("item_property_id", sa.Integer(), nullable=True)
-    )
+    op.add_column("item", sa.Column("item_property_id", sa.Integer(), nullable=True))
     op.create_foreign_key(
         op.f("fk_item_item_property_id_itemproperty"),
         "item",
@@ -160,9 +146,7 @@ def upgrade() -> None:
         ["item_property_id"],
         ["id"],
     )
-    op.add_column(
-        "monster", sa.Column("monster_type_id", sa.Integer(), nullable=True)
-    )
+    op.add_column("monster", sa.Column("monster_type_id", sa.Integer(), nullable=True))
     op.create_foreign_key(
         op.f("fk_monster_monster_type_id_monstertype"),
         "monster",
@@ -209,12 +193,8 @@ def downgrade() -> None:
     op.drop_table("itemtype")
     op.drop_table("itemproperty")
     sa.Enum("UNDEAD", name="monstertype").create(op.get_bind())
-    sa.Enum("HEADGEAR", "ARMOR", "FOOTGEAR", "HAND", name="itemtype").create(
-        op.get_bind()
-    )
-    sa.Enum("FLAME", "WOODEN", "STICK", name="itemproperty").create(
-        op.get_bind()
-    )
+    sa.Enum("HEADGEAR", "ARMOR", "FOOTGEAR", "HAND", name="itemtype").create(op.get_bind())
+    sa.Enum("FLAME", "WOODEN", "STICK", name="itemproperty").create(op.get_bind())
     op.add_column(
         "monster",
         sa.Column(

@@ -1,7 +1,11 @@
+"""Состояния конечного автомата."""
+
 from aiogram.fsm.state import State, StatesGroup
 
 
 class GeneralState(StatesGroup):
+    """Внеигровые состояния пользователей."""
+
     START = State()
     PERSONAL_ACCOUNT = State()
     ACTIVE_ROOM = State()

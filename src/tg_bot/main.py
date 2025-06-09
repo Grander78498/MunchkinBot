@@ -6,10 +6,6 @@ import os
 import sys
 from pathlib import Path
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
-from dotenv import load_dotenv
 
 working_dir = Path().absolute().parent
 sys.path.insert(0, str(working_dir))
@@ -19,31 +15,24 @@ for name in os.listdir(working_dir):
         sys.path.insert(0, str(working_dir.joinpath(name)))
 
 try:
-    from custom_exceptions.general import EnvException
     from tg_bot.handlers.commands import router as command_router
     from tg_bot.handlers.general import router as general_router
     from tg_bot.utils.api_client import APIClient
-    from tg_bot.settings import get_settings
+    from tg_bot.settings import get_bot, get_dispatcher
 except ImportError as e:
     raise ImportError("Ошибка при импорте внутренних модулей") from e
 
-current_path = Path().absolute()
-load_dotenv(current_path.parent.parent.joinpath(".env"), override=True)
-
 logging.basicConfig(level=logging.INFO)
-token = os.getenv("BOT_TOKEN")
-if token is None:
-    raise EnvException("Отсутствует переменная среды BOT_TOKEN")
-
-settings = get_settings(token)
 
 
 async def main() -> None:
     """Запуск бота."""
-    settings.dp.include_router(command_router)
-    settings.dp.include_router(general_router)
+    dp = get_dispatcher()
+    bot = get_bot()
+    dp.include_router(command_router)
+    dp.include_router(general_router)
     async with APIClient(base_url="http://127.0.0.1:8000") as _:
-        await settings.dp.start_polling(settings.bot)
+        await dp.start_polling(bot)
 
 
 if __name__ == "__main__":

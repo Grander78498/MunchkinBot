@@ -31,10 +31,9 @@ def get_exchange_rate(currency: Currencies) -> float:
     """
     url = "https://cbr.ru/cursonweek"
     params = {"DT": "", "val_id": currency.value}
-    response = requests.get(
-        url, headers=headers, params=params, timeout=10
-    ).json()[0]
+    response = requests.get(url, headers=headers, params=params, timeout=10).json()[0]
     return float(response["curs"])
+
 
 # def get_active_currency_codes() -> list[dict[str, Any]]:
 #     url = 'https://www.cbr.ru/scripts/XML_daily.asp'

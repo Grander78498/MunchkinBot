@@ -50,9 +50,7 @@ async def cmd_rules(message: Message) -> None:
         text="Оригинальные правила",
         url="https://hobbygames.ru/download/rules/m_color_rules.pdf",
     )
-    await message.answer(
-        read_text("rules", Language.RU), reply_markup=builder.as_markup()
-    )
+    await message.answer(read_text("rules", Language.RU), reply_markup=builder.as_markup())
 
 
 @router.message(Command("support"))
@@ -82,9 +80,7 @@ async def cmd_world(message: Message) -> None:
     ]
     builder = ReplyKeyboardBuilder().add(*kb)
     builder.adjust(2)
-    await message.answer(
-        "Выбери СВОего героя", reply_markup=builder.as_markup()
-    )
+    await message.answer("Выбери СВОего героя", reply_markup=builder.as_markup())
 
 
 @router.message(Command("get_daniel_trumps_most_transparent_policies"))

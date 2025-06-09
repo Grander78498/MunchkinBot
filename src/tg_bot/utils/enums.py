@@ -1,3 +1,5 @@
+"""Полезные перечисления."""
+
 from enum import Enum
 
 
@@ -11,6 +13,8 @@ class Language(str, Enum):
 
 
 class KeyBoards(str, Enum):
+    """Текстовые клавиатуры."""
+
     CHECK_STATISTIC = "🍔Просмотреть статистику🍟"
     SETUP_CONFIG = "🏳️‍🌈Изменить конфигурацию пола🏳️‍🌈"
     PERSONAL_ACCOUNT = "🧑‍🦽‍➡️Личный кабинет🧑‍🦽‍➡️"
@@ -19,8 +23,8 @@ class KeyBoards(str, Enum):
     PLAY_MONSTER = "😈Сыграть монстра😈"
     READY = "🫦Подтвердить готовность🫦"
     CREATE_ROOM = "🏢Создать комнату🏢"
-    DELETE_PARTY = "💀Завершить партию💀"
-    LEAVE_PARTY = "🍻Выйти из игры🍻"
+    DELETE_GAME = "💀Завершить партию💀"
+    LEAVE_GAME = "🍻Выйти из игры🍻"
     MEMBERS = "👥Участники👥"
     BAN_MEMBER = "🤬Забанить🤬"
     MEMBER_INFO = "🥸Посмотреть подробную информацию🥸"

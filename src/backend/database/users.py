@@ -22,13 +22,13 @@ class User(CustomSQLModel, table=True):
     __tablename__ = "tg_user"
 
     tg_id: int = Field(
-        sa_column=Column(
-            BigInteger(), primary_key=True, autoincrement=False, nullable=False
-        )
+        sa_column=Column(BigInteger(), primary_key=True, autoincrement=False, nullable=False)
     )
     user_name: str = Field(unique=True, max_length=32)
     full_name: str = Field(unique=True, max_length=128)
 
     munchkins: list["Munchkin"] = lazy_relationship(back_populates="user", cascade_delete=True)
-    banned_games: list["Game"] = lazy_relationship(back_populates="banned_users", link_model=BannedMunchkin)
+    banned_games: list["Game"] = lazy_relationship(
+        back_populates="banned_users", link_model=BannedMunchkin
+    )
     games: list["Game"] = lazy_relationship(back_populates="creator", cascade_delete=True)
