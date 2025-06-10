@@ -14,8 +14,6 @@ from tg_bot.utils.utils import read_text
 from custom_exceptions.bot import TGException
 from custom_exceptions.general import WrongNoneParameterException
 
-api_client = APIClient()
-
 
 async def start_message(
     state: FSMContext,
@@ -32,7 +30,8 @@ async def start_message(
     elif user_id is None:
         raise WrongNoneParameterException()
 
-    active_game = (await api_client.get_active_user_game(user_id)).result
+    async with APIClient() as api_client:
+        active_game = (await api_client.get_active_user_game(user_id)).result
 
     builder = ReplyKeyboardBuilder()
     if not active_game:
@@ -62,7 +61,8 @@ async def room_message(message: Message, state: FSMContext, text: Text | None = 
     user = message.from_user
     if user is None:
         raise TGException("Пользователь не пользователь")
-    response = await api_client.get_active_user_game(user.id)
+    async with APIClient() as api_client:
+        response = await api_client.get_active_user_game(user.id)
     active_game = response.result
 
     builder = ReplyKeyboardBuilder()
@@ -90,7 +90,8 @@ async def room_message(message: Message, state: FSMContext, text: Text | None = 
 async def members_message(message: Message, state: FSMContext) -> None:
     """Отправка сообщения с пользователями."""
     data = await state.get_data()
-    result_list = (await api_client.get_munchkins(data["game_code"])).result_list
+    async with APIClient() as api_client:
+        result_list = (await api_client.get_munchkins(data["game_code"])).result_list
     text = as_marked_list(
         *[
             Text(Bold(user["full_name"]), " (", Code(user["user_name"]), ")")

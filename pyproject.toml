@@ -14,6 +14,7 @@ dependencies = [
     "fake-useragent>=2.2.0",
     "fastapi[standard]>=0.115.12",
     "pydantic<2.11",
+    "pydantic-settings>=2.9.1",
     "redis>=5.2.1",
     "requests>=2.32.3",
     "sqlalchemy[asyncio]>=2.0.40",
@@ -50,6 +51,7 @@ no_implicit_optional = true
 warn_return_any = true
 warn_unused_ignores = true
 exclude = ["src.backend.migrations"]
+plugins = ['pydantic.mypy']
 
 
 [[tool.mypy.overrides]]

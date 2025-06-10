@@ -14,7 +14,6 @@ from tg_bot.utils.api_client import APIClient
 from tg_bot.utils.enums import KeyBoards
 from tg_bot.stuff import deleted_from_game
 
-api_client = APIClient()
 router = Router(name="general")
 
 
@@ -37,7 +36,10 @@ async def create_room(message: Message, state: FSMContext) -> None:
     """Создание комнаты."""
     if message.from_user is None:
         raise TGException("Пользователь не пользователь")
-    response = await api_client.create_game(message.from_user.id)
+
+    async with APIClient() as api_client:
+        response = await api_client.create_game(message.from_user.id)
+
     await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.ACTIVE_ROOM)
     if response.detail:
@@ -78,9 +80,11 @@ async def entered_invite_code(message: Message, state: FSMContext) -> None:
     """Обработка ввода кода приглашения."""
     if message.from_user is None:
         raise TGException("Пользователь не пользователь")
-    response = await api_client.add_user_to_game(
-        message.text, message.from_user.id  # type: ignore[arg-type]
-    )
+
+    async with APIClient() as api_client:
+        response = await api_client.add_user_to_game(
+            message.text, message.from_user.id  # type: ignore[arg-type]
+        )
     # здесь ТОЧНО не может быть message.text is None из-за фильтра
 
     if response.detail:
@@ -180,7 +184,9 @@ async def player_lose(message: Message) -> None:
 async def delete_game_session(message: Message, state: FSMContext) -> None:
     """Удаление игровой сессии."""
     data = await state.get_data()
-    response = await api_client.delete_game(data["game_code"])
+    async with APIClient() as api_client:
+        response = await api_client.delete_game(data["game_code"])
+
     if response.detail:
         await message.answer(text=response.detail)
     else:
@@ -202,7 +208,8 @@ async def leave_game(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     if message.from_user is None:
         raise TGException("Пользователь не пользователь")
-    response = await api_client.delete_user_from_game(data["game_code"], message.from_user.id)
+    async with APIClient() as api_client:
+        response = await api_client.delete_user_from_game(data["game_code"], message.from_user.id)
     if response.detail:
         await message.answer(text=response.detail)
     else:
@@ -233,7 +240,8 @@ async def enter_user_name_for_info(message: Message, state: FSMContext) -> None:
 async def username_entered(message: Message, state: FSMContext) -> None:
     """Обработка введённого имени."""
     user_name = message.text
-    response = await api_client.get_user(user_name=user_name)
+    async with APIClient() as api_client:
+        response = await api_client.get_user(user_name=user_name)
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
     if response.detail:
@@ -259,7 +267,8 @@ async def username_entered(message: Message, state: FSMContext) -> None:
 async def ban_handler(message: Message, state: FSMContext) -> None:
     """Бан пользователя."""
     data = await state.get_data()
-    response = await api_client.ban_user(data["game_code"], data["user_id"])
+    async with APIClient() as api_client:
+        response = await api_client.ban_user(data["game_code"], data["user_id"])
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
     if response.detail:

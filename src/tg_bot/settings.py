@@ -1,30 +1,45 @@
-"""Хранение бота и диспетчера."""
+"""Настройки бота."""
 
-import os
-from pathlib import Path
 from functools import lru_cache
 
-from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
-from custom_exceptions.general import EnvException
+
+class Settings(BaseSettings):
+    """Переменные окружения."""
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return dotenv_settings, env_settings, init_settings, file_secret_settings
+
+    model_config = SettingsConfigDict(env_file=".env")
+
+    bot_token: str
+    api_url: str
 
 
-current_path = Path().absolute()
-load_dotenv(current_path.parent.parent.joinpath(".env"), override=True)
-
-token = os.getenv("BOT_TOKEN")
-if token is None:
-
-    raise EnvException("Отсутствует переменная среды BOT_TOKEN")
+@lru_cache
+def get_settings() -> Settings:
+    """Получение переменных окружения."""
+    return Settings() # type: ignore
 
 
 @lru_cache
 def get_bot() -> Bot:
     """Получение объекта бота."""
-    return Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    return Bot(
+        token=get_settings().bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    )
 
 
 @lru_cache

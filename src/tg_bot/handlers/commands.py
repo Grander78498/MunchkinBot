@@ -13,7 +13,6 @@ from tg_bot.utils.api_client import APIClient
 from tg_bot.utils.enums import Language
 from tg_bot.utils.utils import read_text
 
-api_client = APIClient()
 router = Router(name="commands")
 
 
@@ -23,7 +22,8 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     user = message.from_user
     if user is None:
         raise TGException("Ошибка при получении отправителя сообщения")
-    _ = await api_client.save_user(user.id, user.username, user.full_name)
+    async with APIClient() as api_client:
+        _ = await api_client.save_user(user.id, user.username, user.full_name)
 
     await start_message(state, message=message)
 

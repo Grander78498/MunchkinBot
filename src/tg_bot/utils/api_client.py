@@ -1,10 +1,17 @@
 """Модуль для обращения к API."""
 
 from typing import Any, Literal
+import types
 
 import aiohttp
 import requests
 from pydantic import BaseModel
+
+from tg_bot.settings import get_settings
+
+
+settings = get_settings()
+Method = Literal["GET", "POST", "PUT", "DELETE"]
 
 
 class APIResponse(BaseModel):
@@ -16,30 +23,34 @@ class APIResponse(BaseModel):
     result_list: list[dict[str, Any]] = []
 
 
-Method = Literal["GET", "POST", "PUT", "DELETE"]
+class APIClientException(Exception):
+    """Исключение на неправильное использование APIClient."""
 
 
 class APIClient:
     """Класс обработки обращений к API."""
 
-    def __new__(cls, **kwargs):  # type: ignore[no-untyped-def]
-        if not hasattr(cls, "instance"):
-            cls.instance = super(APIClient, cls).__new__(cls, **kwargs)
-        return cls.instance
-
     def __init__(self, base_url: str | None = None):
-        """Класс обработки обращений к API."""
-        if base_url is not None:
-            self.base_url = base_url
-            self.session = aiohttp.ClientSession(
-                base_url=base_url, timeout=aiohttp.ClientTimeout(total=5)
-            )
+        if base_url is None:
+            base_url = settings.api_url
+        self.base_url = base_url
+        self.session: aiohttp.ClientSession | None = None
 
     async def __aenter__(self) -> "APIClient":
+        self.session = aiohttp.ClientSession(
+            base_url=self.base_url, timeout=aiohttp.ClientTimeout(total=5)
+        )
         return self
 
-    async def __aexit__(self, *args):  # type: ignore[no-untyped-def]
-        await self.session.close()
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> None:
+        if self.session is not None:
+            await self.session.close()
+            self.session = None
 
     async def _handle_request(
         self,
@@ -50,7 +61,7 @@ class APIClient:
     ) -> APIResponse:
         """Отправка запроса с заданными параметрами.
 
-        Args:
+        Параметры:
             method (Method): Используемый HTTP метод
             url (str): Эндпоинт для отправки запроса
 
@@ -59,10 +70,12 @@ class APIClient:
 
             body (dict[str, Any] | None, optional): Тело запроса. Может отсутствовать
 
-        Returns:
+        Возвращает:
             dict[str, Any]: Ответ от сервера.
         """
         try:
+            if self.session is None:
+                raise APIClientException("API Client необходимо вызывать через менеджер контекста")
             if path_params is not None:
                 params = "&".join(
                     [f"{key}={value}" for key, value in path_params.items() if value is not None]
