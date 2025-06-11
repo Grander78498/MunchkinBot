@@ -31,7 +31,7 @@ async def start_message(
         raise WrongNoneParameterException()
 
     async with APIClient() as api_client:
-        active_game = (await api_client.get_active_user_game(user_id)).result
+        active_game = (await api_client.get_active_user_game(user_id)).data
 
     builder = ReplyKeyboardBuilder()
     if not active_game:
@@ -39,7 +39,7 @@ async def start_message(
         builder.button(text=KeyBoards.JOIN_GAME)
     else:
         builder.button(text=KeyBoards.ACTIVE_ROOM)
-        await state.update_data(game_code=active_game["code"], creator_id=active_game["creator_id"])
+        await state.update_data(game_code=active_game.code, creator_id=active_game.creator_id)
     builder.button(text=KeyBoards.SUPPORT)
     builder.button(text=KeyBoards.DONATE)
     builder.button(text=KeyBoards.PERSONAL_ACCOUNT)
@@ -63,10 +63,10 @@ async def room_message(message: Message, state: FSMContext, text: Text | None = 
         raise TGException("Пользователь не пользователь")
     async with APIClient() as api_client:
         response = await api_client.get_active_user_game(user.id)
-    active_game = response.result
+    active_game = response.data
 
     builder = ReplyKeyboardBuilder()
-    if user.id == active_game["creator_id"]:
+    if user.id == active_game.creator_id:
         builder.button(text=KeyBoards.START_GAME)
         builder.button(text=KeyBoards.SETUP_CONFIG)
         builder.button(text=KeyBoards.DELETE_GAME)
@@ -79,11 +79,11 @@ async def room_message(message: Message, state: FSMContext, text: Text | None = 
 
     if text is None:
         text = as_list(
-            Text("Код приглашения: ", Code(active_game["code"])),
+            Text("Код приглашения: ", Code(active_game.code)),
             Text("Чтобы другие манчкины могли присоединиться к партии, пришлите им этот код!"),
         )
 
-    await state.update_data(game_code=active_game["code"])
+    await state.update_data(game_code=active_game.code)
     await message.answer(**text.as_kwargs(), reply_markup=builder.as_markup())
 
 
@@ -91,12 +91,9 @@ async def members_message(message: Message, state: FSMContext) -> None:
     """Отправка сообщения с пользователями."""
     data = await state.get_data()
     async with APIClient() as api_client:
-        result_list = (await api_client.get_munchkins(data["game_code"])).result_list
+        users = (await api_client.get_munchkins(data["game_code"])).data
     text = as_marked_list(
-        *[
-            Text(Bold(user["full_name"]), " (", Code(user["user_name"]), ")")
-            for user in result_list
-        ],
+        *[Text(Bold(user.full_name), " (", Code(user.user_name), ")") for user in users.users],
         marker="👤",
     )
     builder = ReplyKeyboardBuilder()

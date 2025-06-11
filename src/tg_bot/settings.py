@@ -31,7 +31,7 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Получение переменных окружения."""
-    return Settings() # type: ignore
+    return Settings()  # type: ignore
 
 
 @lru_cache

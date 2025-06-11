@@ -1,6 +1,6 @@
 """Модуль для обращения к API."""
 
-from typing import Any, Literal
+from typing import Any, Generic, Literal, TypeVar
 import types
 
 import aiohttp
@@ -8,19 +8,20 @@ import requests
 from pydantic import BaseModel
 
 from tg_bot.settings import get_settings
+from tg_bot.utils.api_models import User, UserList, Game, Munchkin, MunchkinList
 
 
 settings = get_settings()
 Method = Literal["GET", "POST", "PUT", "DELETE"]
+T = TypeVar("T")
 
 
-class APIResponse(BaseModel):
+class APIResponse(BaseModel, Generic[T]):
     """Общая модель ответов от API."""
 
     ok: bool
-    detail: str | None = None
-    result: dict[str, Any] = {}
-    result_list: list[dict[str, Any]] = []
+    data: T | None = None
+    error: str | None = None
 
 
 class APIClientException(Exception):
@@ -58,7 +59,8 @@ class APIClient:
         url: str,
         path_params: dict[str, Any] | None = None,
         body: dict[str, Any] | None = None,
-    ) -> APIResponse:
+        model_cls: type[T] | None = None,
+    ) -> APIResponse[T]:
         """Отправка запроса с заданными параметрами.
 
         Параметры:
@@ -69,6 +71,7 @@ class APIClient:
             Путевые параметры запроса (которые передаются после ?). Могут отсутствовать
 
             body (dict[str, Any] | None, optional): Тело запроса. Может отсутствовать
+            model_type (type[T] | None, optional): Модель ответа. Может отсутствовать
 
         Возвращает:
             dict[str, Any]: Ответ от сервера.
@@ -86,21 +89,20 @@ class APIClient:
             async with self.session.request(
                 method=method, url=url, params=params, json=body
             ) as response:
-                status_code = response.status
-                result, result_list = {}, []
-                match await response.json():
-                    case list(tmp):
-                        result_list = tmp
-                    case dict(tmp):
-                        result = tmp
-                        if status_code != 200:
-                            return APIResponse(ok=False, **result)
+                if response.ok:
+                    data = await response.json()
+                    return APIResponse[T](
+                        ok=True, data=model_cls(**data) if data is not None else None
+                    )
+                error = await response.json()
+                return APIResponse[T](ok=True, error=error["detail"])
 
-                return APIResponse(ok=True, result=result, result_list=result_list)
         except requests.exceptions.ConnectTimeout:
-            return APIResponse(ok=False, detail="API Error")
+            return APIResponse(ok=False, error="API Error")
 
-    async def save_user(self, tg_id: int, user_name: str | None, full_name: str) -> APIResponse:
+    async def save_user(
+        self, tg_id: int, user_name: str | None, full_name: str
+    ) -> APIResponse[None]:
         """Сохранение юзера."""
         result = await self._handle_request(
             "POST",
@@ -115,40 +117,51 @@ class APIClient:
 
     async def get_user(
         self, user_id: int | None = None, user_name: str | None = None
-    ) -> APIResponse:
+    ) -> APIResponse[User]:
         """Получение информации о пользователе."""
         params: dict[str, Any] = {}
         if user_id is not None:
             params.update(user_id=user_id)
         if user_name is not None:
             params.update(user_name=user_name)
-        result = await self._handle_request("GET", "/telegram/user", path_params=params)
+        result = await self._handle_request(
+            "GET", "/telegram/user", path_params=params, model_cls=User
+        )
         return result
 
-    async def create_game(self, creator_id: int) -> APIResponse:
+    async def create_game(self, creator_id: int) -> APIResponse[Game]:
         """Создание игровой партии."""
-        result = await self._handle_request("POST", "/game", path_params={"creator_id": creator_id})
+        result = await self._handle_request(
+            "POST",
+            "/game",
+            path_params={"creator_id": creator_id},
+            model_cls=Game,
+        )
         return result
 
-    async def add_user_to_game(self, game_code: str, user_id: int) -> APIResponse:
+    async def add_user_to_game(self, game_code: str, user_id: int) -> APIResponse[Munchkin]:
         """Добавление пользователя в партию."""
         result = await self._handle_request(
             "POST",
             f"/game/{game_code}/munchkin",
             path_params={"user_id": user_id},
+            model_cls=Munchkin,
         )
         return result
 
-    async def get_user_games(self, user_id: int, active: bool | None = None) -> APIResponse:
+    async def get_user_games(
+        self, user_id: int, active: bool | None = None
+    ) -> APIResponse[MunchkinList]:
         """Получение манчкинов пользователя"""
         result = await self._handle_request(
             "GET",
             "/game/munchkin",
             path_params={"user_id": user_id, "active": active},
+            model_cls=MunchkinList,
         )
         return result
 
-    async def get_active_user_game(self, user_id: int) -> APIResponse:
+    async def get_active_user_game(self, user_id: int) -> APIResponse[Game]:
         """Получение активной игры пользователя.
 
         Параметры:
@@ -157,10 +170,12 @@ class APIClient:
         Возвращает:
             APIResponse
         """
-        result = await self._handle_request("GET", "/game", path_params={"user_id": user_id})
+        result = await self._handle_request(
+            "GET", "/game", path_params={"user_id": user_id}, model_cls=Game
+        )
         return result
 
-    async def delete_game(self, game_code: str) -> APIResponse:
+    async def delete_game(self, game_code: str) -> APIResponse[MunchkinList]:
         """Удаление игры.
 
         Параметры:
@@ -169,10 +184,10 @@ class APIClient:
         Возвращает:
             APIResponse
         """
-        result = await self._handle_request("DELETE", f"/game/{game_code}")
+        result = await self._handle_request("DELETE", f"/game/{game_code}", model_cls=MunchkinList)
         return result
 
-    async def delete_user_from_game(self, game_code: str, user_id: int) -> APIResponse:
+    async def delete_user_from_game(self, game_code: str, user_id: int) -> APIResponse[None]:
         """Удаление пользователя из игры.
 
         Параметры:
@@ -189,7 +204,7 @@ class APIClient:
         )
         return result
 
-    async def get_munchkins(self, game_code: str) -> APIResponse:
+    async def get_munchkins(self, game_code: str) -> APIResponse[UserList]:
         """Получение списка манчкинов в игре.
 
         Параметры:
@@ -198,10 +213,12 @@ class APIClient:
         Возвращает:
             APIResponse
         """
-        result = await self._handle_request("GET", f"/game/{game_code}/munchkin")
+        result = await self._handle_request(
+            "GET", f"/game/{game_code}/munchkin", model_cls=UserList
+        )
         return result
 
-    async def ban_user(self, game_code: str, user_id: int) -> APIResponse:
+    async def ban_user(self, game_code: str, user_id: int) -> APIResponse[None]:
         """Бан пользователя из игры.
 
         Параметры:

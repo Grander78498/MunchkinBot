@@ -42,17 +42,17 @@ async def create_room(message: Message, state: FSMContext) -> None:
 
     await state.update_data(previous_state=GeneralState.START)
     await state.set_state(GeneralState.ACTIVE_ROOM)
-    if response.detail:
+    if response.error:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
-        await message.answer(text=response.detail, reply_markup=builder.as_markup())
+        await message.answer(text=response.error, reply_markup=builder.as_markup())
         return
-    game = response.result
+    game = response.data
     text = as_list(
-        Text("Игровая партия создана с кодом приглашения: ", Code(game["code"])),
+        Text("Игровая партия создана с кодом приглашения: ", Code(game.code)),
         Text("Чтобы другие манчкины могли присоединиться к партии, пришлите им этот код!"),
     )
-    await state.update_data(game_code=game["code"], creator_id=game["creator_id"])
+    await state.update_data(game_code=game.code, creator_id=game.creator_id)
     await room_message(message, state, text=text)
 
 
@@ -87,10 +87,10 @@ async def entered_invite_code(message: Message, state: FSMContext) -> None:
         )
     # здесь ТОЧНО не может быть message.text is None из-за фильтра
 
-    if response.detail:
+    if response.error:
         builder = ReplyKeyboardBuilder()
         builder.button(text=KeyBoards.RETURN)
-        await message.answer(response.detail, reply_markup=builder.as_markup())
+        await message.answer(response.error, reply_markup=builder.as_markup())
         return
 
     await state.update_data(previous_state=GeneralState.START)
@@ -187,14 +187,14 @@ async def delete_game_session(message: Message, state: FSMContext) -> None:
     async with APIClient() as api_client:
         response = await api_client.delete_game(data["game_code"])
 
-    if response.detail:
-        await message.answer(text=response.detail)
+    if response.error:
+        await message.answer(text=response.error)
     else:
         if message.from_user is None:
             raise TGException("Пользователь не пользователь")
 
         user_id_list = [
-            x["user_id"] for x in response.result_list if x["user_id"] != message.from_user.id
+            user.user_id for user in response.data.munchkins if user.user_id != message.from_user.id
         ]
         for user_id in user_id_list:
             await deleted_from_game(user_id)
@@ -210,8 +210,8 @@ async def leave_game(message: Message, state: FSMContext) -> None:
         raise TGException("Пользователь не пользователь")
     async with APIClient() as api_client:
         response = await api_client.delete_user_from_game(data["game_code"], message.from_user.id)
-    if response.detail:
-        await message.answer(text=response.detail)
+    if response.error:
+        await message.answer(text=response.error)
     else:
         await message.answer(text="Вы успешно вышли из игры!")
     await start_message(state, message=message)
@@ -244,21 +244,21 @@ async def username_entered(message: Message, state: FSMContext) -> None:
         response = await api_client.get_user(user_name=user_name)
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
-    if response.detail:
-        await message.answer(response.detail)
+    if response.error:
+        await message.answer(response.error)
         await message.answer("Повторите ввод", reply_markup=builder.as_markup())
         return
     builder.button(text=KeyBoards.BAN_MEMBER)
-    user = response.result
+    user = response.data
 
     text = Text(
         "Выбран пользователь: ",
-        Bold(user["full_name"]),
+        Bold(user.full_name),
         " (",
-        Code(user["user_name"]),
+        Code(user.user_name),
         ")",
     )
-    await state.update_data(user_id=user["tg_id"])
+    await state.update_data(user_id=user.tg_id)
     await state.set_state(GeneralState.MEMBER_INFO)
     await message.answer(**text.as_kwargs(), reply_markup=builder.as_markup())
 
@@ -271,11 +271,10 @@ async def ban_handler(message: Message, state: FSMContext) -> None:
         response = await api_client.ban_user(data["game_code"], data["user_id"])
     builder = ReplyKeyboardBuilder()
     builder.button(text=KeyBoards.RETURN)
-    if response.detail:
-        await message.answer(response.detail)
+    if response.error:
+        await message.answer(response.error)
     else:
         await deleted_from_game(data["user_id"])
-        await message.answer(response.result["msg"])
 
     await members_message(message, state)
 

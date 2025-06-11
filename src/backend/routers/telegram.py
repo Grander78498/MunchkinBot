@@ -1,12 +1,9 @@
 """Получение информации о пользователях."""
 
-from typing import Any
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from backend.database import AsyncGameSession
-from backend.database.responses import SuccessfulResponse
 from backend.database.users import User
 from backend.utils.db_functions import get_user
 
@@ -16,8 +13,8 @@ router = APIRouter(
 )
 
 
-@router.post("/user", response_model=SuccessfulResponse)
-async def save_user(user: User, session: AsyncGameSession) -> Any:
+@router.post("/user", status_code=status.HTTP_204_NO_CONTENT)
+async def save_user(user: User, session: AsyncGameSession) -> None:
     """Сохранение информации о пользователе."""
     try:
         async with session.begin():
@@ -28,7 +25,7 @@ async def save_user(user: User, session: AsyncGameSession) -> Any:
             detail="Такой пользователь уже существует",
         ) from e
 
-    return {"msg": "All good"}
+    return None
 
 
 @router.get("/user")

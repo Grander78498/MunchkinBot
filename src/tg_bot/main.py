@@ -30,7 +30,7 @@ async def main() -> None:
     bot = get_bot()
     dp.include_router(command_router)
     dp.include_router(general_router)
-    await dp.start_polling(bot) # type: ignore
+    await dp.start_polling(bot)  # type: ignore
 
 
 if __name__ == "__main__":

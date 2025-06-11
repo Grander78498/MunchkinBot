@@ -61,14 +61,14 @@ def lazy_relationship(
     """Перегруженная функция Relationship с дополнительными параметрами."""
     if sa_relationship_kwargs is None:
         sa_relationship_kwargs = {}
-    
+
     sa_relationship_kwargs.setdefault("lazy", "selectin")
-    
+
     return Relationship(
         back_populates=back_populates,
         sa_relationship_args=sa_relationship_args,
         sa_relationship_kwargs=sa_relationship_kwargs,
-        **kwargs
+        **kwargs,
     )
 
 

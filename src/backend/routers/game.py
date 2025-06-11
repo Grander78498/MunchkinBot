@@ -1,14 +1,12 @@
 """Получение информации о манчкине."""
 
-from typing import Any
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
+from pydantic import BaseModel
 
 from backend.database import AsyncGameSession
 from backend.database.game import Munchkin, Game
-from backend.database.responses import SuccessfulResponse
 from backend.database.users import User
 from backend.utils.db_functions import (
     get_user,
@@ -21,6 +19,14 @@ router = APIRouter(
     prefix="/game",
     tags=["Game"],
 )
+
+
+class MunchkinList(BaseModel):
+    munchkins: list[Munchkin]
+
+
+class UserList(BaseModel):
+    users: list[User]
 
 
 @router.post("")
@@ -46,10 +52,10 @@ async def get_active_game(user_id: int, session: AsyncGameSession) -> Game | Non
         return game
 
 
-@router.get("/munchkin")
+@router.get("/munchkin", response_model=MunchkinList)
 async def get_user_munchkins(
     user_id: int, session: AsyncGameSession, active: bool | None = None
-) -> list[Munchkin]:
+) -> dict:
     """Получение манчкинов, созданных пользователем."""
     async with session.begin():
         stmt = select(User).where(User.tg_id == user_id).join(Munchkin).join(Game)
@@ -65,7 +71,7 @@ async def get_user_munchkins(
 
         if user is None:
             return []
-        return user.munchkins
+        return {"munhckins": user.munchkins}
 
 
 @router.post("/{game_code}/munchkin")
@@ -99,26 +105,26 @@ async def create_munchkin(game_code: str, user_id: int, session: AsyncGameSessio
     return munchkin
 
 
-@router.get("/{game_code}/munchkin")
-async def get_game_munchkins(game_code: str, session: AsyncGameSession) -> list[User]:
+@router.get("/{game_code}/munchkin", response_model=UserList)
+async def get_game_munchkins(game_code: str, session: AsyncGameSession) -> dict:
     """Получение манкчинов в игре."""
     async with session.begin():
         game = await get_game(game_code, session)
-        return [munchkin.user for munchkin in game.munchkins]
+        return {"users": [munchkin.user for munchkin in game.munchkins]}
 
 
-@router.delete("/{game_code}")
-async def delete_game(game_code: str, session: AsyncGameSession) -> list[Munchkin]:
+@router.delete("/{game_code}", response_model=MunchkinList)
+async def delete_game(game_code: str, session: AsyncGameSession) -> dict:
     """Удаление игры."""
     async with session.begin():
         game = await get_game(game_code, session)
         munchkins = [munchkin for munchkin in game.munchkins if munchkin.user_id != game.creator_id]
         await session.delete(game)
-        return munchkins
+        return {"munhckins": munchkins}
 
 
-@router.delete("/{game_code}/munchkin", response_model=SuccessfulResponse)
-async def delete_user_from_game(game_code: str, user_id: int, session: AsyncGameSession) -> Any:
+@router.delete("/{game_code}/munchkin", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_from_game(game_code: str, user_id: int, session: AsyncGameSession) -> None:
     """Удаление пользователя из игры."""
     async with session.begin():
         result = await session.execute(
@@ -126,11 +132,11 @@ async def delete_user_from_game(game_code: str, user_id: int, session: AsyncGame
         )
         munchkin = result.scalar()
         await session.delete(munchkin)
-        return {"msg": "Удалено"}
+        return None
 
 
-@router.post("/{game_code}/munchkin/ban", response_model=SuccessfulResponse)
-async def ban_munchkin(game_code: str, user_id: int, session: AsyncGameSession) -> Any:
+@router.post("/{game_code}/munchkin/ban", status_code=status.HTTP_204_NO_CONTENT)
+async def ban_munchkin(game_code: str, user_id: int, session: AsyncGameSession) -> None:
     """Бан манчкина."""
     async with session.begin():
         game = await get_game(game_code, session)
@@ -144,4 +150,4 @@ async def ban_munchkin(game_code: str, user_id: int, session: AsyncGameSession) 
         )
         munchkin = result.scalar()
         await session.delete(munchkin)
-        return {"msg": "Забанен"}
+        return None
