@@ -10,19 +10,19 @@ from sqlmodel import Field
 from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.enums import CardType, SourceType
 from backend.database.link_models import (
-    MunchkinCard,
-    MunchkinItem,
-    MonsterCombat,
-    MunchkinStats,
+    ActionMonster,
     CardAction,
     ItemCondition,
-    ActionMonster,
+    MonsterCombat,
+    MunchkinCard,
+    MunchkinItem,
+    MunchkinStats,
 )
 
 if TYPE_CHECKING:
-    from backend.database.game import Munchkin, Combat
     from backend.database.actions import Action
     from backend.database.conditions import Condition
+    from backend.database.game import Combat, Munchkin
 
 
 class ItemType(CustomSQLModel, table=True):

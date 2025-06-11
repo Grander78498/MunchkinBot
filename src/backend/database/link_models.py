@@ -1,6 +1,6 @@
 """Таблицы для связей многие-ко-многим."""
 
-from sqlalchemy import SmallInteger, BigInteger
+from sqlalchemy import BigInteger, SmallInteger
 from sqlmodel import Field
 
 from backend.database import CustomSQLModel

@@ -5,7 +5,11 @@ from functools import lru_cache
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class Settings(BaseSettings):
@@ -20,7 +24,13 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        return dotenv_settings, env_settings, init_settings, file_secret_settings
+        """Переопределение порядка импорта переменных окружения."""
+        return (
+            dotenv_settings,
+            env_settings,
+            init_settings,
+            file_secret_settings,
+        )
 
     model_config = SettingsConfigDict(env_file=".env")
 
@@ -31,14 +41,15 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Получение переменных окружения."""
-    return Settings()  # type: ignore
+    return Settings()
 
 
 @lru_cache
 def get_bot() -> Bot:
     """Получение объекта бота."""
     return Bot(
-        token=get_settings().bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        token=get_settings().bot_token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
 

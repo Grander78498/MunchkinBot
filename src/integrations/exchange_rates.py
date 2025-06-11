@@ -23,8 +23,7 @@ class Currencies(str, Enum):
 
 
 def get_exchange_rate(currency: Currencies) -> float:
-    """
-    Получает текущий курс валюты с сайта Центробанка РФ.
+    """Получает текущий курс валюты с сайта Центробанка РФ.
 
     :param currency: Валюта из перечисления Currencies
     :return: Текущий курс валюты

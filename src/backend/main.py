@@ -1,5 +1,4 @@
-"""
-Главный файл для FastAPI сервера.
+"""Главный файл для FastAPI сервера.
 
 Управляет жизненным циклом приложения и роутерами.
 """
@@ -8,7 +7,7 @@ from typing import Any
 
 from fastapi import FastAPI
 
-from backend.routers import game, telegram, admin, actions, conditions
+from backend.routers import actions, admin, conditions, game, telegram
 
 app = FastAPI()
 app.include_router(telegram.router)

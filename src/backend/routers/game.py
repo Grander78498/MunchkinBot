@@ -1,18 +1,18 @@
 """Получение информации о манчкине."""
 
 from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
-from pydantic import BaseModel
 
 from backend.database import AsyncGameSession
-from backend.database.game import Munchkin, Game
+from backend.database.game import Game, Munchkin
 from backend.database.users import User
 from backend.utils.db_functions import (
-    get_user,
-    get_game,
     generate_game_code,
     get_active_user_game,
+    get_game,
+    get_user,
 )
 
 router = APIRouter(
@@ -22,10 +22,14 @@ router = APIRouter(
 
 
 class MunchkinList(BaseModel):
+    """Список манчкинов."""
+
     munchkins: list[Munchkin]
 
 
 class UserList(BaseModel):
+    """Список пользователей."""
+
     users: list[User]
 
 

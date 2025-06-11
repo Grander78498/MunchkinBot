@@ -8,9 +8,9 @@ from sqlmodel import Field
 from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.enums import EqualType
 from backend.database.link_models import (
-    ItemCondition,
     ActionCondition,
     CardsTransferCondition,
+    ItemCondition,
 )
 
 if TYPE_CHECKING:

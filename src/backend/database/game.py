@@ -2,26 +2,26 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UniqueConstraint, SmallInteger, BigInteger
+from sqlalchemy import BigInteger, SmallInteger, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlmodel import Field
 
 from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.enums import Gender, TurnType
 from backend.database.link_models import (
+    ActionMunchkin,
+    BannedMunchkin,
+    MonsterCombat,
     MunchkinCard,
     MunchkinCombat,
     MunchkinItem,
-    MonsterCombat,
     MunchkinStats,
-    ActionMunchkin,
-    BannedMunchkin,
 )
 
 if TYPE_CHECKING:
     from backend.database.actions import Action
-    from backend.database.users import User
     from backend.database.cards import GameCard, GameItem, Monster, Stats
+    from backend.database.users import User
 
 
 class Game(CustomSQLModel, table=True):

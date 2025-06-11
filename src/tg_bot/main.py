@@ -6,7 +6,6 @@ import os
 import sys
 from pathlib import Path
 
-
 working_dir = Path().absolute().parent
 sys.path.insert(0, str(working_dir))
 

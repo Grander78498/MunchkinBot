@@ -14,3 +14,4 @@ cards
 .env
 
 .coverage
+*.log

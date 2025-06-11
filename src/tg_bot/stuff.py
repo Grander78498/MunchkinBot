@@ -1,7 +1,7 @@
 """Для функций, которые будут манипулировать состояниями разных пользователей."""
 
 from tg_bot.messages import start_message
-from tg_bot.settings import get_dispatcher, get_bot
+from tg_bot.settings import get_bot, get_dispatcher
 
 dp = get_dispatcher()
 bot = get_bot()

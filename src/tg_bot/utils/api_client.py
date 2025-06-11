@@ -1,15 +1,14 @@
 """Модуль для обращения к API."""
 
-from typing import Any, Generic, Literal, TypeVar
 import types
+from typing import Any, Generic, Literal, TypeVar
 
 import aiohttp
 import requests
 from pydantic import BaseModel
 
 from tg_bot.settings import get_settings
-from tg_bot.utils.api_models import User, UserList, Game, Munchkin, MunchkinList
-
+from tg_bot.utils.api_models import Game, Munchkin, MunchkinList, User, UserList
 
 settings = get_settings()
 Method = Literal["GET", "POST", "PUT", "DELETE"]
@@ -92,7 +91,8 @@ class APIClient:
                 if response.ok:
                     data = await response.json()
                     return APIResponse[T](
-                        ok=True, data=model_cls(**data) if data is not None else None
+                        ok=True,
+                        data=model_cls(**data) if data is not None else None,
                     )
                 error = await response.json()
                 return APIResponse[T](ok=True, error=error["detail"])
@@ -152,7 +152,7 @@ class APIClient:
     async def get_user_games(
         self, user_id: int, active: bool | None = None
     ) -> APIResponse[MunchkinList]:
-        """Получение манчкинов пользователя"""
+        """Получение манчкинов пользователя."""
         result = await self._handle_request(
             "GET",
             "/game/munchkin",

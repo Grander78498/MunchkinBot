@@ -1,18 +1,18 @@
 """Основной файл обработчиков событий."""
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from aiogram.utils.formatting import as_list, Text, Code, Bold
+from aiogram.utils.formatting import Bold, Code, Text, as_list
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from integrations import get_exchange_rate, Currencies
 from custom_exceptions.bot import TGException
-from tg_bot.messages import start_message, room_message, members_message
+from integrations import Currencies, get_exchange_rate
+from tg_bot.messages import members_message, room_message, start_message
 from tg_bot.states import GeneralState
+from tg_bot.stuff import deleted_from_game
 from tg_bot.utils.api_client import APIClient
 from tg_bot.utils.enums import KeyBoards
-from tg_bot.stuff import deleted_from_game
 
 router = Router(name="general")
 
@@ -83,7 +83,8 @@ async def entered_invite_code(message: Message, state: FSMContext) -> None:
 
     async with APIClient() as api_client:
         response = await api_client.add_user_to_game(
-            message.text, message.from_user.id  # type: ignore[arg-type]
+            message.text,
+            message.from_user.id,  # type: ignore[arg-type]
         )
     # здесь ТОЧНО не может быть message.text is None из-за фильтра
 

@@ -1,5 +1,4 @@
-"""
-Таблицы для хранения информации, связанной с телеграмом.
+"""Таблицы для хранения информации, связанной с телеграмом.
 
 (может, переименовать в telegram.py?)
 """
@@ -13,7 +12,7 @@ from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.link_models import BannedMunchkin
 
 if TYPE_CHECKING:
-    from backend.database.game import Munchkin, Game
+    from backend.database.game import Game, Munchkin
 
 
 class User(CustomSQLModel, table=True):

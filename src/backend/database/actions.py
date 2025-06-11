@@ -7,17 +7,17 @@ from sqlmodel import Field
 
 from backend.database import CustomSQLModel, lazy_relationship
 from backend.database.link_models import (
-    CardAction,
     ActionCondition,
-    CardsTransferCondition,
-    ActionMunchkin,
     ActionMonster,
+    ActionMunchkin,
+    CardAction,
+    CardsTransferCondition,
 )
 
 if TYPE_CHECKING:
+    from backend.database.cards import Card, Monster
     from backend.database.conditions import Condition
     from backend.database.game import Munchkin
-    from backend.database.cards import Card, Monster
 
 
 class ActionBase(CustomSQLModel):

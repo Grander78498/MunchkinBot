@@ -1,13 +1,13 @@
 """Файл со всеми командами."""
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, KeyboardButton
+from aiogram.types import KeyboardButton, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 from custom_exceptions.bot import TGException
-from integrations import get_exchange_rate, Currencies
+from integrations import Currencies, get_exchange_rate
 from tg_bot.messages import start_message
 from tg_bot.utils.api_client import APIClient
 from tg_bot.utils.enums import Language

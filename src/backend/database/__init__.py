@@ -1,25 +1,25 @@
 """Реализует обращения к базам данных."""
 
 import os
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Any, AsyncGenerator, Annotated
+from typing import Annotated, Any
 
 from dotenv import load_dotenv
 from fastapi import Depends
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
-    create_async_engine,
     async_sessionmaker,
+    create_async_engine,
 )
-from sqlmodel import SQLModel, Relationship
+from sqlmodel import Relationship, SQLModel
 
 from custom_exceptions.general import EnvException
 
 
 class CustomSQLModel(SQLModel):
-    """
-    Надстройка над базовым SQLModel.
+    """Надстройка над базовым SQLModel.
 
     чтобы встроить автоматическое наименование constraint
     """
@@ -44,7 +44,7 @@ if db_url is None:
 engine = create_async_engine(db_url)
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_session() -> AsyncGenerator[AsyncSession]:
     """Генератор сессии обращения к БД."""
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:

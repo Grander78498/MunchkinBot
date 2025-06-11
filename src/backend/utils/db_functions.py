@@ -19,16 +19,7 @@ async def get_user(
     user_id: int | None = None,
     user_name: str | None = None,
 ) -> User:
-    """Получение пользователя по tg_id.
-
-    args:
-        user_id: int - tg_id пользователя
-        user_name: str - краткое имя пользователя
-    returns:
-        User - информация о пользователе из БД
-    raises:
-        HTTPException - если пользователя нет в БД
-    """
+    """Получение пользователя по tg_id."""
     if user_id is not None:
         result = await session.execute(select(User).where(User.tg_id == user_id))
     elif user_name is not None:
@@ -47,15 +38,7 @@ async def get_user(
 
 
 async def get_game(game_code: str, session: AsyncSession) -> Game:
-    """Получение информации об игровой партии по коду приглашения.
-
-    args:
-        game_code: str - код приглашения
-    returns:
-        Game - информация об игре из БД
-    raises:
-        HTTPException - если игровой партии нет в БД
-    """
+    """Получение информации об игровой партии по коду приглашения."""
     result = await session.execute(select(Game).where(Game.code == game_code))
     game = result.scalar()
     if game is None:
@@ -76,15 +59,7 @@ async def get_active_user_game(user_id: int, session: AsyncSession) -> Game | No
 
 
 async def get_action(action_id: int, session: AsyncSession) -> Action:
-    """Получение информации о действии по его id.
-
-    args:
-        action_id: int
-    returns:
-        Action - информация о действии из БД
-    raises:
-        HTTPException - если действия нет в БД
-    """
+    """Получение информации о действии по его id."""
     result = await session.execute(select(Action).where(Action.id == action_id))
     action = result.scalar()
     if action is None:
@@ -93,15 +68,7 @@ async def get_action(action_id: int, session: AsyncSession) -> Action:
 
 
 async def get_condition(condition_id: int, session: AsyncSession) -> Condition:
-    """Получение информации об условии по его id.
-
-    args:
-        condition_id: int
-    returns:
-        Condition - информация об условии из БД
-    raises:
-        HTTPException - если условия нет в БД
-    """
+    """Получение информации об условии по его id."""
     result = await session.execute(select(Condition).where(Condition.id == condition_id))
     condition = result.scalar()
     if condition is None:

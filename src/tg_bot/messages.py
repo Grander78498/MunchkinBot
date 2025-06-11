@@ -3,16 +3,15 @@
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from aiogram.utils.formatting import as_list, as_marked_list, Text, Code, Bold
+from aiogram.utils.formatting import Bold, Code, Text, as_list, as_marked_list
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-
-from tg_bot.states import GeneralState
-from tg_bot.utils.api_client import APIClient
-from tg_bot.utils.enums import Language, KeyBoards
-from tg_bot.utils.utils import read_text
 
 from custom_exceptions.bot import TGException
 from custom_exceptions.general import WrongNoneParameterException
+from tg_bot.states import GeneralState
+from tg_bot.utils.api_client import APIClient
+from tg_bot.utils.enums import KeyBoards, Language
+from tg_bot.utils.utils import read_text
 
 
 async def start_message(
